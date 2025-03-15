@@ -22,5 +22,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
+const userroutes = require('./src/routes/UserRoutes');
+const specializationroutes = require('./src/routes/SpecializationRoutes');
+app.use('/api/v1/user', userroutes);
+app.use('/api/v1/specialization', specializationroutes);
 app.get('/', (req, res) => res.send('Rephrase App Started'))
 app.listen(port, () => console.log(`Rephrase app listening on port ${port}!`))

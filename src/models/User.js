@@ -42,7 +42,7 @@ const schema = new Schema({
         type : String
     },
     refer_by: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'User',
         default: null
     },

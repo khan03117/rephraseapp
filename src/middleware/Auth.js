@@ -1,4 +1,3 @@
-const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const SECRET_KEY = process.env.SECRET_KEY;
@@ -52,17 +51,5 @@ async function Auth(req, res, next) {
         });
     }
 }
-function handleRequestErrors(req, res, next) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.json({
-            data: null,
-            success: 0,
-            errors: errors.array(),
-            message: errors.array()[0].msg
-        })
-    } else {
-        next();
-    }
-}
-module.exports = { Auth, handleRequestErrors }
+
+module.exports = { Auth }

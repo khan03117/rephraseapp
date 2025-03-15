@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { verify_otp, update_profile, user_list } = require("../controllers/UserController");
+const { verify_otp, update_profile, user_list, send_otp } = require("../controllers/UserController");
 const store = require("../middleware/Upload");
 const { Auth } = require("../middleware/Auth");
 

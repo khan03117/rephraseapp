@@ -1,0 +1,9 @@
+const { Router } = require("express");
+const { get_all_specialization, _create_specialization, _update_specialization, delete_specialization } = require("../controllers/SpecializationController");
+
+const router = Router();
+router.get('/', get_all_specialization);
+router.post('/', _create_specialization);
+router.put('/update/:id', _update_specialization);
+router.delete('/delete/:id', delete_specialization);
+module.exports = router;
