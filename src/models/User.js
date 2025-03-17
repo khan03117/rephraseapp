@@ -29,17 +29,17 @@ const schema = new Schema({
         type: String,
         default: null
     },
-    dob : {
+    dob: {
         type: Date
     },
-    marital_status : {
-        type : String
+    marital_status: {
+        type: String
     },
-    address : {
-        type : String
+    address: {
+        type: String
     },
-    about_yourself : {
-        type : String
+    about_yourself: {
+        type: String
     },
     refer_by: {
         type: Schema.Types.ObjectId,
@@ -83,17 +83,26 @@ const schema = new Schema({
     pincode: {
         type: String,
     },
-    registration_certificate : {
-        type : String
+    registration_certificate: {
+        type: String
     },
-    graduation_certificate : {
-        type : String
+    graduation_certificate: {
+        type: String
     },
-    post_graduation_certificate : {
-        type : String
+    post_graduation_certificate: {
+        type: String
     },
-    mci_certificate : {
-        type : String
+    mci_certificate: {
+        type: String
+    },
+    aadhaar_front: {
+        type: String
+    },
+    aadhaar_back: {
+        type: String
+    },
+    pan_image: {
+        type: String
     },
     fcm_token: {
         type: String

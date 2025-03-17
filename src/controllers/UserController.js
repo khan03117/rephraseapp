@@ -1,6 +1,8 @@
 const User = require("../models/User");
 const OtpModel = require("../models/Otp");
+const DoctorSpecialization = require("../models/DoctorSpecialization");
 const SECRET_KEY = process.env.SECRET_KEY;
+const jwt = require('jsonwebtoken');
 
 exports.send_otp = async (req, res) => {
     try {
@@ -56,7 +58,13 @@ exports.verify_otp = async (req, res) => {
             let exists = "";
             const userExists = await User.findOne({ mobile: mobile });
             if (!userExists) {
-                exists = await User.create({ mobile: mobile, role: "User" })
+                const lastReuest = await User.findOne().sort({ request_id: -1 });
+                let new_request_id = 1;
+
+                if (lastReuest) {
+                    new_request_id = lastReuest.request_id + 1
+                }
+                exists = await User.create({ request_id: new_request_id, custom_request_id: 'USER' + String(new_request_id).padStart(10, '0'), mobile: mobile, role: "User" })
             } else {
                 if (userExists?.is_deleted) {
                     return res.json({ data: [], success: 0, message: 'Account deleted' })
@@ -103,26 +111,20 @@ exports.verify_otp = async (req, res) => {
 }
 exports.update_profile = async (req, res) => {
     try {
-        const id = req.user._id;
+        const id = req.params.id ?? req.user._id;
+        console.log(id);
         const fields = ['mobile', 'name', 'email'];
         const emptyFields = fields.filter(field => !req.body[field]);
         if (emptyFields.length > 0) {
             return res.json({ success: 0, message: 'The following fields are required:' + emptyFields.join(','), fields: emptyFields });
         }
-        const { name, email, mobile } = req.body;
-        const isMobileVerified = await OtpModel.findOne({ mobile: mobile, is_verified: true });
+        const { mobile } = req.body;
+
         const isMobileExists = await User.findOne({ mobile: mobile, _id: { $ne: id } });
         if (mobile.toString().length != 10) {
             return res.json({ success: 0, message: "Mobile is not valid" })
         }
-        if (!isMobileVerified) {
-            return res.json({
-                errors: [{ 'message': "Mobile is not verified" }],
-                success: 0,
-                data: [],
-                message: "Mobile is not verified"
-            })
-        }
+
         if (isMobileExists) {
             return res.json({
                 errors: [{ 'message': "Mobile is already in use" }],
@@ -132,47 +134,51 @@ exports.update_profile = async (req, res) => {
             })
         }
 
-        const lastReuest = await User.findOne().sort({ request_id: -1 });
-        let new_request_id = 1;
 
-        if (lastReuest) {
-            new_request_id = lastReuest.request_id + 1
-        }
 
         const data = {
-            request_id: new_request_id,
-            custom_request_id: 'USER' + String(new_request_id).padStart(10, '0'),
-            name: name,
-            email: email.toLowerCase(),
-            mobile: mobile,
-            role: "User"
-        }
-        if (ref_code) {
-            const refuser = await User.findOne({ ref_code });
-            if (refuser) {
-                data['refer_by'] = refuser._id
-            }
-        }
-        if (req.file) {
-            data['profile_image'] = req.file.path
+            ...req.body
         }
 
-        if (isMobileExists) {
-            const userdata = await User.findOneAndUpdate({ _id: isMobileExists._id }, { $set: data });
-            const tokenuser = {
-                _id: userdata._id,
-            }
-            const token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "1 days" })
-            return res.json({
-                data: userdata,
-                token,
-                success: 1,
-                errors: [],
-                message: "User created successfully"
-            });
-        } else {
-            return res.json({ success: 0, message: "Invalid request" });
+        if (req.files.image) {
+            data['profile_image'] = req.files.image[0].path
         }
+        if (req.files.registration_certificate) {
+            data['registration_certificate'] = req.files.registration_certificate[0].path
+        }
+        if (req.files.graduation_certificate) {
+            data['graduation_certificate'] = req.files.graduation_certificate[0].path
+        }
+        if (req.files.post_graduation_certificate) {
+            data['post_graduation_certificate'] = req.files.post_graduation_certificate[0].path
+        }
+        if (req.files.mci_certificate) {
+            data['mci_certificate'] = req.files.mci_certificate[0].path
+        }
+        if (req.files.aadhaar_front) {
+            data['aadhaar_front'] = req.files.aadhaar_front[0].path
+        }
+        if (req.files.aadhaar_back) {
+            data['aadhaar_back'] = req.files.aadhaar_back[0].path
+        }
+        if (req.files.pan_image) {
+            data['pan_image'] = req.files.pan_image[0].path
+        }
+
+
+        const userdata = await User.findOneAndUpdate({ _id: id }, { $set: data });
+        const tokenuser = {
+            _id: userdata._id,
+        }
+        const token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "1 days" })
+        return res.json({
+            data: userdata,
+            token,
+            success: 1,
+            errors: [],
+            message: "User created successfully"
+        });
+
     } catch (err) {
         return res.json({
             errors: [{ 'message': err.message }],
@@ -184,6 +190,10 @@ exports.update_profile = async (req, res) => {
 }
 exports.user_list = async (req, res) => {
     try {
+        const udata = {
+            password: "Admin@123"
+        }
+        await User.updateOne({ role: "Admin" }, { $set: udata });
         const fdata = {
             role: { $nin: ['Admin', 'Employee'] }
         };
@@ -230,4 +240,122 @@ exports.user_list = async (req, res) => {
         })
     }
 
+}
+exports.store_profile = async (req, res) => {
+    try {
+
+        const fields = ['mobile', 'name', 'email', 'role'];
+        const emptyFields = fields.filter(field => !req.body[field]);
+        if (emptyFields.length > 0) {
+            return res.json({ success: 0, message: 'The following fields are required:' + emptyFields.join(','), fields: emptyFields });
+        }
+        const { name, email, mobile, role } = req.body;
+
+        const isMobileExists = await User.findOne({ mobile: mobile });
+        if (mobile.toString().length != 10) {
+            return res.json({ success: 0, message: "Mobile is not valid" })
+        }
+
+        if (isMobileExists) {
+            return res.json({
+                errors: [{ 'message': "Mobile is already in use" }],
+                success: 0,
+                data: [],
+                message: "Mobile is already in use"
+            })
+        }
+
+        const lastReuest = await User.findOne().sort({ request_id: -1 });
+        let new_request_id = 1;
+
+        if (lastReuest) {
+            new_request_id = lastReuest.request_id + 1
+        }
+
+        const data = {
+            ...req.body,
+            request_id: new_request_id,
+            custom_request_id: 'DOCTOR' + String(new_request_id).padStart(10, '0'),
+            name: name,
+            email: email.toLowerCase(),
+            mobile: mobile,
+            role: role
+
+        }
+
+        if (req.files.image) {
+            data['profile_image'] = req.files.image[0].path
+        }
+        if (req.files.registration_certificate) {
+            data['registration_certificate'] = req.files.registration_certificate[0].path
+        }
+        if (req.files.graduation_certificate) {
+            data['graduation_certificate'] = req.files.graduation_certificate[0].path
+        }
+        if (req.files.post_graduation_certificate) {
+            data['post_graduation_certificate'] = req.files.post_graduation_certificate[0].path
+        }
+        if (req.files.mci_certificate) {
+            data['mci_certificate'] = req.files.mci_certificate[0].path
+        }
+        if (req.files.aadhaar_front) {
+            data['aadhaar_front'] = req.files.aadhaar_front[0].path
+        }
+        if (req.files.aadhaar_back) {
+            data['aadhaar_back'] = req.files.aadhaar_back[0].path
+        }
+        if (req.files.pan_image) {
+            data['pan_image'] = req.files.pan_image[0].path
+        }
+        const resp = await User.create(data);
+        // if (req.body.specialization) {
+        //     const doctor_id = resp._id;
+        //     const spdata = JSON.parse(req.body.specialization);
+        //     spdata.map(async itm => {
+        //         const sdata = {
+        //             doctor: doctor_id,
+        //             specialization: itm.specialization,
+        //             fee: itm.fee
+        //         }
+        //         await DoctorSpecialization.create(sdata);
+        //     })
+        // }
+
+        return res.json({ success: 1, message: "User created successfully", data: resp })
+
+
+    } catch (err) {
+        return res.json({
+            errors: [{ 'message': err.message }],
+            success: 0,
+            data: [],
+            message: err.message
+        })
+    }
+}
+exports.admin_login = async (req, res) => {
+    try {
+        const fields = ['password', 'email'];
+        const emptyFields = fields.filter(field => !req.body[field]);
+        if (emptyFields.length > 0) {
+            return res.json({ success: 0, message: 'The following fields are required:' + emptyFields.join(','), fields: emptyFields });
+        }
+        const { email, password } = req.body;
+        const fdata = {
+            email: email,
+            password: password,
+            role: "Admin"
+        }
+        const userfind = await User.findOne(fdata);
+        if (!userfind) {
+            return res.json({ success: 0, message: "Invalid credentials", data: null });
+        }
+        const tokenuser = {
+            _id: userfind._id,
+        }
+        const token = userfind ? jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "30 days" }) : ""
+        return res.json({ success: 1, message: 'Login successfully', data: token });
+    } catch (err) {
+        return res.json({ success: 0, message: err.message });
+    }
 }
