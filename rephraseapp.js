@@ -1,10 +1,12 @@
 const express = require('express')
 const app = express();
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger-output.json");
 const mongoose = require('mongoose');
 const path = require('path');
 const cors = require('cors');
 require('dotenv').config();
-const mongourl = "mongodb+srv://franticnoida2016:franticnoida2016@cluster0.9n1kpyn.mongodb.net/refreshapp";
+const mongourl = "mongodb+srv://noreplycabs24:KkhHGcKLcnzppeLk@cluster0.at7dp.mongodb.net/refreshapp";
 mongoose.connect(mongourl);
 const database = mongoose.connection;
 database.on('error', (error) => {
@@ -13,7 +15,9 @@ database.on('error', (error) => {
 database.once('connected', () => {
     console.log('Database connected');
 });
+// Swagger Configuration
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 process.env.TZ = "Asia/Kolkata";
 const port = 7887;
 
@@ -23,8 +27,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 const userroutes = require('./src/routes/UserRoutes');
+const doctorroutes = require('./src/routes/DoctorRoutes');
 const specializationroutes = require('./src/routes/SpecializationRoutes');
 app.use('/api/v1/user', userroutes);
+app.use('/api/v1/doctor', doctorroutes);
 app.use('/api/v1/specialization', specializationroutes);
 app.get('/', (req, res) => res.send('Rephrase App Started'))
 app.listen(port, () => console.log(`Rephrase app listening on port ${port}!`))

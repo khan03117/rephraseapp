@@ -83,6 +83,12 @@ const schema = new Schema({
     pincode: {
         type: String,
     },
+    languages: {
+        type: [String]
+    },
+    mode: {
+        type: [String]
+    },
     registration_certificate: {
         type: String
     },

@@ -27,7 +27,7 @@ exports.send_otp = async (req, res) => {
         const otp = ['8888888888', '9999999999'].includes(mobile.toString()) ? '8888' : Math.floor(1000 + Math.random() * 9000);
         await OtpModel.deleteMany({ mobile: mobile });
         const item = await OtpModel.create({ mobile: mobile, otp: otp });
-        send_otp_mobile(mobile, otp)
+        // send_otp_mobile(mobile, otp)
         return res.json({
             errors: [],
             success: 1,
@@ -55,38 +55,24 @@ exports.verify_otp = async (req, res) => {
         const item = await OtpModel.findOne({ mobile: mobile, otp: otp, is_verified: false });
         if (item) {
             await OtpModel.updateOne({ mobile: mobile }, { $set: { is_verified: true } });
-            let exists = "";
+            let token = "";
             const userExists = await User.findOne({ mobile: mobile });
-            if (!userExists) {
-                const lastReuest = await User.findOne().sort({ request_id: -1 });
-                let new_request_id = 1;
-
-                if (lastReuest) {
-                    new_request_id = lastReuest.request_id + 1
-                }
-                exists = await User.create({ request_id: new_request_id, custom_request_id: 'USER' + String(new_request_id).padStart(10, '0'), mobile: mobile, role: "User" })
-            } else {
+            if (userExists) {
                 if (userExists?.is_deleted) {
                     return res.json({ data: [], success: 0, message: 'Account deleted' })
                 }
-                exists = userExists
-            }
-            let token;
-            if (exists) {
                 const tokenuser = {
-                    _id: exists._id,
+                    _id: userExists._id,
                 }
-                token = exists ? jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "30 days" }) : ""
-                if (exists) {
-                    await User.findOneAndUpdate({ _id: exists._id }, { $set: { jwt_token: token } });
-                }
+                token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "30 days" });
+
+                await User.findOneAndUpdate({ _id: userExists._id }, { $set: { jwt_token: token } });
+
             }
-
-
             return res.json({
                 data: token,
                 verification_id: item._id,
-                is_exists: exists ? true : false,
+                is_exists: userExists ? true : false,
                 success: 1,
                 errors: [],
                 message: "Login Successfully"
@@ -112,27 +98,26 @@ exports.verify_otp = async (req, res) => {
 exports.update_profile = async (req, res) => {
     try {
         const id = req.params.id ?? req.user._id;
-        console.log(id);
-        const fields = ['mobile', 'name', 'email'];
+        const fields = ['name', 'email'];
         const emptyFields = fields.filter(field => !req.body[field]);
         if (emptyFields.length > 0) {
             return res.json({ success: 0, message: 'The following fields are required:' + emptyFields.join(','), fields: emptyFields });
         }
-        const { mobile } = req.body;
+        // const { mobile } = req.body;
 
-        const isMobileExists = await User.findOne({ mobile: mobile, _id: { $ne: id } });
-        if (mobile.toString().length != 10) {
-            return res.json({ success: 0, message: "Mobile is not valid" })
-        }
+        // const isMobileExists = await User.findOne({ mobile: mobile, _id: { $ne: id } });
+        // if (mobile.toString().length != 10) {
+        //     return res.json({ success: 0, message: "Mobile is not valid" })
+        // }
 
-        if (isMobileExists) {
-            return res.json({
-                errors: [{ 'message': "Mobile is already in use" }],
-                success: 0,
-                data: [],
-                message: "Mobile is already in use"
-            })
-        }
+        // if (isMobileExists) {
+        //     return res.json({
+        //         errors: [{ 'message': "Mobile is already in use" }],
+        //         success: 0,
+        //         data: [],
+        //         message: "Mobile is already in use"
+        //     })
+        // }
 
 
 
@@ -140,8 +125,8 @@ exports.update_profile = async (req, res) => {
             ...req.body
         }
 
-        if (req.files.image) {
-            data['profile_image'] = req.files.image[0].path
+        if (req.files.profile_image) {
+            data['profile_image'] = req.files.profile_image[0].path
         }
         if (req.files.registration_certificate) {
             data['registration_certificate'] = req.files.registration_certificate[0].path
@@ -167,13 +152,13 @@ exports.update_profile = async (req, res) => {
 
 
         const userdata = await User.findOneAndUpdate({ _id: id }, { $set: data });
-        const tokenuser = {
-            _id: userdata._id,
-        }
-        const token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "1 days" })
+        // const tokenuser = {
+        //     _id: userdata._id,
+        // }
+        // const token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "1 days" })
         return res.json({
             data: userdata,
-            token,
+            // token,
             success: 1,
             errors: [],
             message: "User created successfully"
@@ -190,10 +175,9 @@ exports.update_profile = async (req, res) => {
 }
 exports.user_list = async (req, res) => {
     try {
-        const udata = {
-            password: "Admin@123"
-        }
-        await User.updateOne({ role: "Admin" }, { $set: udata });
+
+        // const admin = await User.create({ name: "Admin", email: "admin@refresh.com", mobile: "9089898989", password: "Admin@123#", role: "Admin" });
+        // console.log(admin);
         const fdata = {
             role: { $nin: ['Admin', 'Employee'] }
         };
@@ -221,13 +205,14 @@ exports.user_list = async (req, res) => {
             ];
         }
         const resp = await User.find(fdata).sort({ created_at: -1 }).skip(skip).limit(perPage);
+
         const totaldocs = await User.countDocuments(fdata);
         const totalPage = Math.ceil(totaldocs / perPage); // Calculate total pages
         const pagination = {
-            current_page: page,
+            page: page,
             perPage,
             totalPage,
-            totalRecords: totaldocs
+            totalDocs: totaldocs
         };
         return res.json({ success: 1, message: "list of users", data: resp, pagination });
 
@@ -250,7 +235,15 @@ exports.store_profile = async (req, res) => {
             return res.json({ success: 0, message: 'The following fields are required:' + emptyFields.join(','), fields: emptyFields });
         }
         const { name, email, mobile, role } = req.body;
-
+        if (!['Doctor', 'User'].includes(role)) {
+            return res.json({ success: 0, message: "Invalid role type", data: null })
+        }
+        if (!req.user) {
+            const checkIsMobileVerified = await OtpModel.findOne({ mobile: mobile, is_verified: true });
+            if (!checkIsMobileVerified) {
+                return res.json({ success: 0, message: "Mobile number is not verified" });
+            }
+        }
         const isMobileExists = await User.findOne({ mobile: mobile });
         if (mobile.toString().length != 10) {
             return res.json({ success: 0, message: "Mobile is not valid" })
@@ -271,11 +264,11 @@ exports.store_profile = async (req, res) => {
         if (lastReuest) {
             new_request_id = lastReuest.request_id + 1
         }
-
+        const prefix = role == "User" ? 'USER' : 'DOCTOR';
         const data = {
             ...req.body,
             request_id: new_request_id,
-            custom_request_id: 'DOCTOR' + String(new_request_id).padStart(10, '0'),
+            custom_request_id: prefix + String(new_request_id).padStart(10, '0'),
             name: name,
             email: email.toLowerCase(),
             mobile: mobile,
@@ -308,26 +301,19 @@ exports.store_profile = async (req, res) => {
             data['pan_image'] = req.files.pan_image[0].path
         }
         const resp = await User.create(data);
-        // if (req.body.specialization) {
-        //     const doctor_id = resp._id;
-        //     const spdata = JSON.parse(req.body.specialization);
-        //     spdata.map(async itm => {
-        //         const sdata = {
-        //             doctor: doctor_id,
-        //             specialization: itm.specialization,
-        //             fee: itm.fee
-        //         }
-        //         await DoctorSpecialization.create(sdata);
-        //     })
-        // }
+        const tokenuser = {
+            _id: resp._id,
+        }
+        const token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "1 days" })
 
-        return res.json({ success: 1, message: "User created successfully", data: resp })
+        return res.json({ success: 1, token, message: "User created successfully", data: resp })
 
 
     } catch (err) {
         return res.json({
             errors: [{ 'message': err.message }],
             success: 0,
+
             data: [],
             message: err.message
         })
