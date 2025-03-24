@@ -4,6 +4,11 @@ const mongoose = require("mongoose");
 // Blog Schema with SEO Fields
 const blogSchema = new mongoose.Schema({
     title: { type: String, required: true, trim: true },
+    categories: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        default: null
+    }],
     banner: { type: String },
     thumbnail: { type: String },
     slug: { type: String },

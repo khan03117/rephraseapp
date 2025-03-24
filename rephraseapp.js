@@ -29,8 +29,12 @@ app.use('/uploads', express.static('uploads'));
 const userroutes = require('./src/routes/UserRoutes');
 const doctorroutes = require('./src/routes/DoctorRoutes');
 const specializationroutes = require('./src/routes/SpecializationRoutes');
+const blogroutes = require('./src/routes/BlogRoutes');
+const videoRoutes = require('./src/routes/VideoRoutes');
 app.use('/api/v1/user', userroutes);
 app.use('/api/v1/doctor', doctorroutes);
 app.use('/api/v1/specialization', specializationroutes);
+app.use('/api/v1/blog', blogroutes);
+app.use('/api/v1/video', videoRoutes);
 app.get('/', (req, res) => res.send('Rephrase App Started'))
 app.listen(port, () => console.log(`Rephrase app listening on port ${port}!`))
