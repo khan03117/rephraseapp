@@ -1,7 +1,7 @@
 const { Schema, model } = require("mongoose");
 
 const PrescriptionCategorySchema = new Schema({
-    url: {
+    slug: {
         type: String
     },
     title: {
