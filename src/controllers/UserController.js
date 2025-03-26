@@ -32,7 +32,7 @@ exports.send_otp = async (req, res) => {
             errors: [],
             success: 1,
             user: checkmobile,
-            data: item,
+            data: otp,
             message: "Otp Send to Your Mobile Sucessfully."
         });
     } catch (err) {
@@ -75,7 +75,7 @@ exports.verify_otp = async (req, res) => {
                 is_exists: userExists ? true : false,
                 success: 1,
                 errors: [],
-                message: "Login Successfully"
+                message: userExists ? "Login Successfully" : "Otp Verified successfully"
             })
         } else {
             return res.json({
@@ -228,7 +228,7 @@ exports.user_list = async (req, res) => {
 }
 exports.store_profile = async (req, res) => {
     try {
-
+        console.log(req.body.specialization)
         const fields = ['mobile', 'name', 'email', 'role'];
         const emptyFields = fields.filter(field => !req.body[field]);
         if (emptyFields.length > 0) {
@@ -304,6 +304,13 @@ exports.store_profile = async (req, res) => {
         const tokenuser = {
             _id: resp._id,
         }
+        const doctor_id = resp._id;
+        if (req.body.specialization) {
+            const arr = JSON.parse(req.body.specialization);
+            arr.forEach(async itm => {
+                await DoctorSpecialization.create({ doctor: doctor_id, specialization: itm });
+            })
+        }
         const token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "1 days" })
 
         return res.json({ success: 1, token, message: "User created successfully", data: resp })
@@ -344,4 +351,14 @@ exports.admin_login = async (req, res) => {
     } catch (err) {
         return res.json({ success: 0, message: err.message });
     }
+}
+exports.my_profile = async (req, res) => {
+    const user_id = req.user._id;
+    const userfind = await User.findOne({ _id: user_id });
+    const specialization = await DoctorSpecialization.find({ doctor: user_id }).populate('specialization');
+    const data = {
+        ...userfind.toObject(),
+        specialization: specialization
+    }
+    return res.json({ data: data, success: 1, message: "Profile" })
 }

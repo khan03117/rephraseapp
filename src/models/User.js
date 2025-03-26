@@ -101,10 +101,16 @@ const schema = new Schema({
     mci_certificate: {
         type: String
     },
+    aadhaar_number: {
+        type: String
+    },
     aadhaar_front: {
         type: String
     },
     aadhaar_back: {
+        type: String
+    },
+    pan_number: {
         type: String
     },
     pan_image: {
