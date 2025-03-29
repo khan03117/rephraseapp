@@ -13,13 +13,17 @@ const slotSchema = new Schema(
             {
                 slot: {
                     type: String,
-                    //enum: ["08:00 AM - 10:00 AM", "10:30 AM - 12:30 PM", "02:00 PM - 04:00 PM"],
+                    enum: ['morning', 'noon', 'evening'],
+                    default: null
                 },
                 start_time: {
                     type: Date,
                 },
                 end_time: {
                     type: Date,
+                },
+                time_slots: {
+                    type: [String]
                 },
                 status: {
                     type: String,
@@ -34,7 +38,8 @@ const slotSchema = new Schema(
         },
         block_type: {
             type: String,
-            enum: ["Partial", "Full"]
+            enum: ["Partial", "Full"],
+            default: null
         },
         block_at: {
             type: Date
