@@ -33,12 +33,14 @@ const blogroutes = require('./src/routes/BlogRoutes');
 const videoRoutes = require('./src/routes/VideoRoutes');
 const prescription = require('./src/routes/PrescriptionRoutes');
 const slotroutes = require('./src/routes/SlotRoutes');
+const bookingRoutes = require('./src/routes/BookingRoutes');
 app.use('/api/v1/user', userroutes);
 app.use('/api/v1/doctor', doctorroutes);
 app.use('/api/v1/specialization', specializationroutes);
 app.use('/api/v1/blog', blogroutes);
 app.use('/api/v1/video', videoRoutes);
 app.use('/api/v1/prescription', prescription);
+app.use('/api/v1/booking', bookingRoutes);
 app.use('/api/v1/slot', slotroutes);
 app.get('/', (req, res) => res.send('Rephrase App Started'))
 app.listen(port, () => console.log(`Rephrase app listening on port ${port}! http://localhost:7887/`))

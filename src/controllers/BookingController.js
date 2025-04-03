@@ -1,39 +1,40 @@
-import User from "../models/User";
-const toIST = (date) => {
-    return new Date(date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }));
-};
-export const find_slots = async (req, res) => {
-    const { doctor_id, date } = req.body;
-    date = toIST(date);
-    const doctor = await User.findOne({ _id: doctor_id, role: "Doctor" });
-    if (!doctor) {
-        return res.json({ success: 0, message: "Not found", data: null })
+const Booking = require("../models/Booking");
+const Slot = require("../models/Slot");
+const moment = require("moment-timezone");
+
+exports.create_booking = async (req, res) => {
+    const userId = req.user._id;
+    const { doctor_id, slot_ids, duration } = req.body;
+    if (![30, 60].includes(duration)) {
+        return res.json({ success: 0, message: "Invalid duration. Only 30 or 60 minutes allowed." });
     }
-    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
-    const now = toIST(new Date());
-    const bookedSessions = await Booking.find({
-        doctor: doctor_id,
-        start_at: { $gte: now, $lte: endOfDay }
-    }).sort({ start_at: 1 });
-    const availableSlots = [];
-    let startSlot = new Date(now);
-    while (startSlot < endOfDay) {
-        let endSlot = new Date(startSlot);
-        endSlot.setMinutes(endSlot.getMinutes() + 30); // Create 30-min slot
-        const isOverlapping = bookedSessions.some(session =>
-            (startSlot >= session.start_at && startSlot < session.end_at) ||
-            (endSlot > session.start_at && endSlot <= session.end_at) ||
-            (startSlot <= session.start_at && endSlot >= session.end_at)
-        );
-        if (!isOverlapping) {
-            availableSlots.push({
-                start: new Date(startSlot),
-                end: new Date(endSlot)
-            });
+    const slots = await Slot.find({ _id: { $in: slot_ids }, doctor: doctor_id, status: "available" })
+        .sort({ start_time: 1 }) // Sort to ensure sequential order
+        .lean();
+    if (slots.length !== slot_ids.length) {
+        return res.json({ success: 0, message: "Some slots are already booked or invalid." });
+    }
+    for (let i = 1; i < slots.length; i++) {
+        const prevSlotEnd = moment.utc(slots[i - 1].end_time);
+        const currentSlotStart = moment.utc(slots[i].start_time);
+        if (!prevSlotEnd.isSame(currentSlotStart)) {
+            return res.status(400).json({ success: 0, message: "Slots must be consecutive with no gaps." });
         }
-        startSlot.setMinutes(startSlot.getMinutes() + 30);
     }
-    return availableSlots;
+    const expectedSlotCount = duration == 30 ? 1 : 2;
+    if (slots.length !== expectedSlotCount) {
+        return res.json({ success: 0, message: `For ${duration}-minute booking, select ${expectedSlotCount} consecutive slot(s).` });
+    }
+    const booking = await Booking.create({
+        user: userId,
+        doctor: doctor_id,
+        slots: slot_ids,
+        start_time: slots[0].start_time,
+        end_time: slots[slots.length - 1].end_time,
+        duration,
+        status: "booked"
+    });
+    await Slot.updateMany({ _id: { $in: slot_ids } }, { $set: { status: "booked" } });
+    return res.json({ success: 1, message: "Booking successful", data: booking });
 
 }

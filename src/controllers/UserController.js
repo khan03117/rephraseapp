@@ -214,7 +214,7 @@ exports.user_list = async (req, res) => {
             totalPage,
             totalDocs: totaldocs
         };
-        return res.json({ success: 1, message: "list of users", data: resp, pagination });
+        return res.json({ success: 1, message: "list of users", data: resp, pagination, fdata });
 
     } catch (err) {
         return res.json({
@@ -238,12 +238,12 @@ exports.store_profile = async (req, res) => {
         if (!['Doctor', 'User'].includes(role)) {
             return res.json({ success: 0, message: "Invalid role type", data: null })
         }
-        if (!req.user) {
-            const checkIsMobileVerified = await OtpModel.findOne({ mobile: mobile, is_verified: true });
-            if (!checkIsMobileVerified) {
-                return res.json({ success: 0, message: "Mobile number is not verified" });
-            }
-        }
+        // if (!req.user) {
+        //     const checkIsMobileVerified = await OtpModel.findOne({ mobile: mobile, is_verified: true });
+        //     if (!checkIsMobileVerified) {
+        //         return res.json({ success: 0, message: "Mobile number is not verified" });
+        //     }
+        // }
         const isMobileExists = await User.findOne({ mobile: mobile });
         if (mobile.toString().length != 10) {
             return res.json({ success: 0, message: "Mobile is not valid" })

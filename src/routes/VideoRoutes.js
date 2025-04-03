@@ -3,7 +3,8 @@ const { get_video, create_video, delete_video, update_video } = require("../cont
 const store = require("../middleware/Upload");
 
 const router = Router();
-router.get('/view/:type', get_video);
+router.get('/view/:page_name?', get_video);
+
 router.post('/', store.fields([
     {
         name: "banner",

@@ -84,7 +84,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     jwt_token: 1,
                     createdAt: 1,
                     updatedAt: 1,
-                    specializationDetails: { title: 1 } // Select only the title
+                    specializationDetails: { title: 1, _id: 1 }
                 }
             }
         ]);

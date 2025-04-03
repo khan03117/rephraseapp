@@ -4,21 +4,31 @@ const bookingSchema = new Schema({
     doctor: {
         type: Schema.Types.ObjectId,
         ref: "User",
-        index: true // Index for faster queries
+        index: true
     },
     user: {
         type: Schema.Types.ObjectId,
         ref: "User",
-        index: true // Index for faster queries
+        index: true
     },
     booking_date: {
-        type: Date, // Use Date type for better handling
+        type: Date,
     },
+    duration: {
+        type: Number
+    },
+    slots: [{
+        type: Schema.Types.ObjectId,
+        ref: "Slot"
+    }],
     start_at: {
-        type: Date, // Use Date to store exact start time
+        type: Date,
     },
     end_at: {
-        type: Date, // Use Date for exact end time
+        type: Date,
+    },
+    status: {
+        type: String
     }
 }, { timestamps: true });
 

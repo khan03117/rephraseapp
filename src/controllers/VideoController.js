@@ -33,7 +33,11 @@ exports.get_video = async (req, res) => {
     const { page_name } = req.params;
     const { id, url } = req.query;
     const fdata = { page_section: page_name };
-    const resp = await Video.find();
+    console.log(page_name)
+    const resp = await Video.find(fdata).populate({
+        path: 'specialization',
+        select: 'title '
+    });
     return res.json({ success: 1, data: resp, message: "List of videos" });
 
 }

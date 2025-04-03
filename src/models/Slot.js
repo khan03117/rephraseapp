@@ -1,51 +1,18 @@
-const { Schema, model } = require("mongoose");
+const mongoose = require("mongoose");
 
-const slotSchema = new Schema(
-    {
-        doctor: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
-        },
-        date: {
-            type: Date,
-        },
-        availability: [
-            {
-                slot: {
-                    type: String,
-                    enum: ['morning', 'noon', 'evening'],
-                    default: null
-                },
-                start_time: {
-                    type: Date,
-                },
-                end_time: {
-                    type: Date,
-                },
-                time_slots: {
-                    type: [String]
-                },
-                status: {
-                    type: String,
-                    enum: ["available", "unavailable"],
-                    default: "available"
-                }
-            }
-        ],
-        slot_type: {
-            type: String,
-            enum: ["Block", "Available"],
-        },
-        block_type: {
-            type: String,
-            enum: ["Partial", "Full"],
-            default: null
-        },
-        block_at: {
-            type: Date
-        }
-    },
-    { timestamps: true }
-);
+const slotSchema = new mongoose.Schema({
+    doctor: { type: mongoose.Schema.Types.ObjectId, ref: "Doctor", required: true },
+    date: { type: Date, required: true }, // Stores only the date
+    start_time: { type: Date, required: true }, // Start time of each 30-min slot
+    end_time: { type: Date, required: true }, // End time of each 30-min slot
+    status: { type: String, enum: ["available", "booked", "blocked"], default: "available" },
+    slot_type: { type: String, default: "Available" },
+    block_type: { type: String, default: null },
+    block_at: { type: Date, default: null },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
 
-module.exports = model("Slot", slotSchema);
+const Slot = mongoose.model("Slot", slotSchema);
+
+module.exports = Slot;
