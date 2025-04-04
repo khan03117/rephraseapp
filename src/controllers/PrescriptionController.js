@@ -77,6 +77,32 @@ exports.update_perscription = async (req, res) => {
     return res.json({ success: 1, message: "Prescription updated successfully", data: resp })
 }
 exports.get_perscription = async (req, res) => {
-    const resp = await Prescription.find();
-    return res.json({ success: 1, message: "List of prescriptions", data: resp });
+    try {
+        const { user, doctor } = req.query;
+        const userId = req.user._id;
+        const role = req.user.role;
+        const fdata = {};
+        if (role == "User") {
+            fdata['user'] = userId
+        }
+        if (role == "Doctor") {
+            fdata['doctor'] = userId
+        }
+        if (user) {
+            fdata['user'] = user
+        }
+        if (doctor) {
+            fdata['doctor'] = doctor;
+        }
+        const resp = await Prescription.find(fdata).populate({
+            path: 'doctor',
+            select: 'custom_request_id name mobile gender dob address role profile_image'
+        }).populate({
+            path: "user",
+            select: 'custom_request_id name mobile gender dob address role profile_image'
+        })
+        return res.json({ success: 1, message: "List of prescriptions", data: resp });
+    } catch (err) {
+        return res.json({ success: 0, message: err.message })
+    }
 }

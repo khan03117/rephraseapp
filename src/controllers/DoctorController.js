@@ -94,3 +94,6 @@ exports.getDoctorWithSpecialization = async (req, res) => {
         console.error("Error fetching doctor with specialization:", error);
     }
 }
+exports.add_appointment = async (req, res) => {
+
+}

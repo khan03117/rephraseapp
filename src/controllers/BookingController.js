@@ -29,6 +29,7 @@ exports.create_booking = async (req, res) => {
         user: userId,
         doctor: doctor_id,
         slots: slot_ids,
+        booking_date: moment.tz(slots[0].start_time, "Asia/Kolkata").startOf("day").utc().toDate(),
         start_time: slots[0].start_time,
         end_time: slots[slots.length - 1].end_time,
         duration,
@@ -37,4 +38,41 @@ exports.create_booking = async (req, res) => {
     await Slot.updateMany({ _id: { $in: slot_ids } }, { $set: { status: "booked" } });
     return res.json({ success: 1, message: "Booking successful", data: booking });
 
+}
+exports.get_booking = async (req, res) => {
+    const userId = req.user._id;
+    const role = req.user.role;
+    const { date } = req.query;
+    const fdata = {}
+    if (role == "User") {
+        fdata['user'] = userId
+    }
+    if (role == "User") {
+        fdata['doctor'] = userId
+    }
+    if (date) {
+        fdata["date"] = moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate();
+    }
+    let bookings = await Booking.find(fdata).populate({
+        path: 'doctor',
+        select: 'custom_request_id name mobile gender dob address role profile_image'
+    }).populate({
+        path: "user",
+        select: 'custom_request_id name mobile gender dob address role profile_image'
+    }).populate({
+        path: 'slots',
+        select: 'date start_time end_time status'
+    }).sort({ booking_date: -1 }).lean();
+
+    bookings = bookings.map(booking => ({
+        ...booking,
+        booking_date: booking.booking_date,
+        slots: booking.slots.map(slot => ({
+            ...slot,
+            start_time: moment.utc(slot.start_time).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss"),
+            end_time: moment.utc(slot.end_time).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss"),
+            date: moment.utc(slot.date).tz("Asia/Kolkata").format("YYYY-MM-DD")
+        }))
+    }));
+    return res.json({ success: 1, message: "List of bookings", data: bookings });
 }
