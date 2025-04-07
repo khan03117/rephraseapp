@@ -64,6 +64,12 @@ const schema = new Schema({
         default: null,
         // select: false
     },
+    mode: {
+        type: [String]
+    },
+    languages: {
+        type: [String]
+    },
     mci_number: {
         type: String
     },

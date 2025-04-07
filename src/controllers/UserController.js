@@ -228,7 +228,6 @@ exports.user_list = async (req, res) => {
 }
 exports.store_profile = async (req, res) => {
     try {
-        console.log(req.body.specialization)
         const fields = ['mobile', 'name', 'email', 'role'];
         const emptyFields = fields.filter(field => !req.body[field]);
         if (emptyFields.length > 0) {
@@ -248,7 +247,6 @@ exports.store_profile = async (req, res) => {
         if (mobile.toString().length != 10) {
             return res.json({ success: 0, message: "Mobile is not valid" })
         }
-
         if (isMobileExists) {
             return res.json({
                 errors: [{ 'message': "Mobile is already in use" }],
@@ -257,10 +255,8 @@ exports.store_profile = async (req, res) => {
                 message: "Mobile is already in use"
             })
         }
-
         const lastReuest = await User.findOne().sort({ request_id: -1 });
         let new_request_id = 1;
-
         if (lastReuest) {
             new_request_id = lastReuest.request_id + 1
         }

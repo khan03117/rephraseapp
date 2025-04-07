@@ -173,3 +173,23 @@ exports.get_slot = async (req, res) => {
         return res.status(500).json({ success: 0, message: "Server error", error: error.message });
     }
 };
+exports.getAllSlots = async (req, res) => {
+    const { date, doctor_id, duration = 30 } = req.query;
+    const fdata = {};
+    if (date) {
+        fdata["date"] = moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate();
+    } else {
+        const today = new Date();
+        fdata["date"] = { $gte: today };
+    }
+    if (doctor_id) {
+        fdata["doctor"] = doctor_id;
+    }
+
+
+    const resp = await Slot.find(fdata).populate({
+        path: "doctor",
+        select: "name profile_image mobile role"
+    })
+    return res.json({ success: 1, message: "List of slots", data: resp });
+}
