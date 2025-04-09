@@ -4,8 +4,16 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger-output.json");
 const mongoose = require('mongoose');
 const path = require('path');
+const https = require('https');
+const fs = require('fs');
 const cors = require('cors');
 require('dotenv').config();
+const options = {
+    key: fs.readFileSync('./ssl/private.pem'),
+    cert: fs.readFileSync('./ssl/certificate.pem'),
+};
+const server = https.createServer(options, app);
+process.env.TZ = "Asia/Kolkata";
 const mongourl = "mongodb+srv://noreplycabs24:KkhHGcKLcnzppeLk@cluster0.at7dp.mongodb.net/refreshapp";
 mongoose.connect(mongourl);
 const database = mongoose.connection;
@@ -43,4 +51,7 @@ app.use('/api/v1/prescription', prescription);
 app.use('/api/v1/booking', bookingRoutes);
 app.use('/api/v1/slot', slotroutes);
 app.get('/', (req, res) => res.send('Rephrase App Started'))
-app.listen(port, () => console.log(`Rephrase app listening on port ${port}! http://localhost:7887/`))
+// app.listen(port, () => console.log(`Rephrase app listening on port ${port}! http://localhost:7887/`))
+server.listen(port, () => {
+    console.log(`Server running at https://localhost:${port}`);
+});
