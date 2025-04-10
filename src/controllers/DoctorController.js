@@ -62,6 +62,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     mobile: 1,
                     gender: 1,
                     dob: 1,
+                    profession: 1,
                     marital_status: 1,
                     address: 1,
                     about_yourself: 1,

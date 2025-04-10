@@ -200,9 +200,9 @@ exports.user_list = async (req, res) => {
         // console.log(admin);
         // const allusers = await User.find().lean();
         // allusers.map(async usr => {
-        //     const slug = await generateUniqueSlug(usr.name);
+
         //     const udata = {
-        //         slug: slug
+        //         profession: "Psychiatrist"
         //     }
         //     await User.updateMany({ _id: usr._id }, { $set: udata })
         // })

@@ -36,6 +36,9 @@ const schema = new Schema({
     dob: {
         type: Date
     },
+    profession: {
+        type: String
+    },
     marital_status: {
         type: String
     },
