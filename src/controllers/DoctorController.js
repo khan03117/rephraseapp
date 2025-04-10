@@ -90,7 +90,33 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     state: 1,
                     city: 1,
                     pincode: 1,
-                    slots: 1,
+                    slots: {
+                        $map: {
+                            input: "$slots",
+                            as: "slot",
+                            in: {
+                                _id: "$$slot._id",
+                                doctor: "$$slot.doctor",
+                                status: "$$slot.status",
+                                // Include other fields if needed...
+
+                                start_time: {
+                                    $dateToString: {
+                                        format: "%Y-%m-%d %H:%M:%S",
+                                        date: "$$slot.start_time",
+                                        timezone: "Asia/Kolkata"
+                                    }
+                                },
+                                end_time: {
+                                    $dateToString: {
+                                        format: "%Y-%m-%d %H:%M:%S",
+                                        date: "$$slot.end_time",
+                                        timezone: "Asia/Kolkata"
+                                    }
+                                }
+                            }
+                        }
+                    },
                     registration_certificate: 1,
                     graduation_certificate: 1,
                     post_graduation_certificate: 1,
