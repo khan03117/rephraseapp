@@ -8,6 +8,10 @@ const schema = new Schema({
     custom_request_id: {
         type: String
     },
+    slug: {
+        type: String,
+
+    },
     profile_image: {
         type: String,
         trim: true

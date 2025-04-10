@@ -28,6 +28,7 @@ exports.get_specility = async (req, res) => {
     return res.json({ success: 1, message: "List of specilities", data: resps });
 }
 exports.getDoctorWithSpecialization = async (req, res) => {
+
     try {
         const doctors = await User.aggregate([
             {
@@ -55,6 +56,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     request_id: 1,
                     custom_request_id: 1,
                     profile_image: 1,
+                    slug: 1,
                     name: 1,
                     email: 1,
                     mobile: 1,

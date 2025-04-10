@@ -3,6 +3,26 @@ const OtpModel = require("../models/Otp");
 const DoctorSpecialization = require("../models/DoctorSpecialization");
 const SECRET_KEY = process.env.SECRET_KEY;
 const jwt = require('jsonwebtoken');
+async function generateUniqueSlug(name) {
+    const baseSlug = name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+    let slug = baseSlug;
+    let count = 1;
+    const alreadusers = await User.find({ slug });
+    // Check if the slug already exists
+    count = alreadusers.length + 1;
+    if (count > 1) {
+        slug = `${slug}-${count}`;
+    }
+
+
+    return slug;
+}
 
 exports.send_otp = async (req, res) => {
     try {
@@ -178,6 +198,14 @@ exports.user_list = async (req, res) => {
 
         // const admin = await User.create({ name: "Admin", email: "admin@refresh.com", mobile: "9089898989", password: "Admin@123#", role: "Admin" });
         // console.log(admin);
+        // const allusers = await User.find().lean();
+        // allusers.map(async usr => {
+        //     const slug = await generateUniqueSlug(usr.name);
+        //     const udata = {
+        //         slug: slug
+        //     }
+        //     await User.updateMany({ _id: usr._id }, { $set: udata })
+        // })
         const fdata = {
             role: { $nin: ['Admin', 'Employee'] }
         };
@@ -237,6 +265,7 @@ exports.store_profile = async (req, res) => {
         if (!['Doctor', 'User'].includes(role)) {
             return res.json({ success: 0, message: "Invalid role type", data: null })
         }
+        const slug = await generateUniqueSlug(req.body.title);
         // if (!req.user) {
         //     const checkIsMobileVerified = await OtpModel.findOne({ mobile: mobile, is_verified: true });
         //     if (!checkIsMobileVerified) {
@@ -263,6 +292,7 @@ exports.store_profile = async (req, res) => {
         const prefix = role == "User" ? 'USER' : 'DOCTOR';
         const data = {
             ...req.body,
+            slug: slug,
             request_id: new_request_id,
             custom_request_id: prefix + String(new_request_id).padStart(10, '0'),
             name: name,
