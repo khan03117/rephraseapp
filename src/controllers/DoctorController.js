@@ -51,6 +51,21 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                 }
             },
             {
+                $lookup: {
+                    from: "slots",
+                    localField: "_id",
+                    foreignField: "doctor",
+                    as: "slots",
+                    pipeline: [
+                        {
+                            $match: { start_time: { $gte: new Date() } }
+                        },
+                        { $limit: 2 }
+                    ]
+                }
+            },
+
+            {
                 $project: {
                     _id: 1, // Including _id field
                     request_id: 1,
@@ -75,6 +90,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     state: 1,
                     city: 1,
                     pincode: 1,
+                    slots: 1,
                     registration_certificate: 1,
                     graduation_certificate: 1,
                     post_graduation_certificate: 1,
