@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const DoctorSpecialization = require("../models/DoctorSpecialization");
 const User = require("../models/User");
 
@@ -28,11 +29,24 @@ exports.get_specility = async (req, res) => {
     return res.json({ success: 1, message: "List of specilities", data: resps });
 }
 exports.getDoctorWithSpecialization = async (req, res) => {
+    const { url, id } = req.query;
+
 
     try {
+        const fdata = {
+            "role": "Doctor"
+        }
+        if (url) {
+            const usr = await User.findOne({ slug: url }).lean();
+            if (usr) {
+                fdata['_id'] = usr._id;
+            }
+        }
+
+
         const doctors = await User.aggregate([
             {
-                $match: { "role": "Doctor" }
+                $match: fdata
             },
             {
                 $lookup: {

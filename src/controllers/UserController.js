@@ -209,7 +209,7 @@ exports.user_list = async (req, res) => {
         const fdata = {
             role: { $nin: ['Admin', 'Employee'] }
         };
-        const { type, keyword, exportdata, status, id, longitude, latitude, maxDistance = 5000, page = 1, perPage = 10, sort = "updatedAt", order } = req.query;
+        const { type, keyword, exportdata, status, id, url, longitude, latitude, maxDistance = 5000, page = 1, perPage = 10, sort = "updatedAt", order } = req.query;
         if (longitude && latitude) {
             fdata['coordinates'] = {
                 $near: {
@@ -224,6 +224,9 @@ exports.user_list = async (req, res) => {
         }
         if (id) {
             fdata['_id'] = id;
+        }
+        if (url) {
+            fdata['slug'] = url;
         }
         if (keyword) {
             fdata["$or"] = [
@@ -265,7 +268,7 @@ exports.store_profile = async (req, res) => {
         if (!['Doctor', 'User'].includes(role)) {
             return res.json({ success: 0, message: "Invalid role type", data: null })
         }
-        const slug = await generateUniqueSlug(req.body.title);
+        const slug = await generateUniqueSlug(req.body.name);
         // if (!req.user) {
         //     const checkIsMobileVerified = await OtpModel.findOne({ mobile: mobile, is_verified: true });
         //     if (!checkIsMobileVerified) {
