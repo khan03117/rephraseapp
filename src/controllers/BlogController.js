@@ -1,4 +1,5 @@
 const Blog = require("../models/Blog");
+const Specialization = require("../models/Specialization");
 
 const makeSlug = (title) => {
     return title
@@ -27,7 +28,7 @@ exports.create_blog = async (req, res) => {
 }
 exports.get_blog = async (req, res) => {
     try {
-        const { id, url } = req.query;
+        const { id, url, category, perPage = 10, page = 1 } = req.query;
         const fdata = {}
         if (id) {
             fdata['_id'] = id;
@@ -35,8 +36,28 @@ exports.get_blog = async (req, res) => {
         if (url) {
             fdata['slug'] = url;
         }
-        const resp = await Blog.find(fdata);
-        return res.json({ success: 1, message: "Testimonial fetched successfull", data: resp });
+        if (category) {
+            const sdata = {
+                title: { $regex: category, $options: "i" }
+            }
+            const foundspec = await Specialization.find(sdata);
+            if (foundspec.length > 0) {
+                fdata['category'] = { $in: foundspec.map(itm => itm._id) }
+            } else {
+                return res.json({ success: 1, message: "Not found", data: [] });
+            }
+        }
+        const totalDocs = await Blog.countDocuments(fdata);
+        const skip = (page - 1) * perPage;
+        const totalPages = Math.ceil(totalDocs / perPage);
+        const pagination = {
+            totalPages,
+            perPage,
+            page,
+            totalDocs
+        }
+        const resp = await Blog.find(fdata).sort({ createdAt: -1 }).skip(skip).limit(perPage);
+        return res.json({ success: 1, message: "Testimonial fetched successfull", data: resp, pagination });
     } catch (err) {
         return res.json({ success: 0, message: err.message });
     }

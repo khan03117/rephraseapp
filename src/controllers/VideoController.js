@@ -1,3 +1,4 @@
+const Specialization = require("../models/Specialization");
 const Video = require("../models/Video");
 
 const makeSlug = (title) => {
@@ -31,14 +32,36 @@ exports.create_video = async (req, res) => {
 }
 exports.get_video = async (req, res) => {
     const { page_name } = req.params;
-    const { id, url } = req.query;
+    const { id, url, page = 1, perPage = 10, category } = req.query;
     const fdata = { page_section: page_name };
-    console.log(page_name)
+    if (id) {
+        fdata['_id'] = id
+    }
+    if (category) {
+        const sdata = {
+            title: { $regex: category, $options: "i" }
+        }
+        const foundspec = await Specialization.find(sdata);
+        if (foundspec.length > 0) {
+            fdata['category'] = { $in: foundspec.map(itm => itm._id) }
+        } else {
+            return res.json({ success: 1, message: "Not found", data: [] });
+        }
+    }
+    const totalDocs = await Video.countDocuments(fdata);
+    const skip = (page - 1) * perPage;
+    const totalPages = Math.ceil(totalDocs / perPage);
+    const pagination = {
+        totalPages,
+        perPage,
+        page,
+        totalDocs
+    }
     const resp = await Video.find(fdata).populate({
         path: 'specialization',
         select: 'title '
-    });
-    return res.json({ success: 1, data: resp, message: "List of videos" });
+    }).sort({ createdAt: -1 }).skip(skip).limit(perPage);
+    return res.json({ success: 1, data: resp, message: "List of videos", pagination });
 
 }
 exports.delete_video = async (req, res) => {
