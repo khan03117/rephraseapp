@@ -259,7 +259,7 @@ exports.user_list = async (req, res) => {
 }
 exports.store_profile = async (req, res) => {
     try {
-        const fields = ['mobile', 'name', 'email', 'role'];
+        const fields = ['mobile', 'name', 'role'];
         const emptyFields = fields.filter(field => !req.body[field]);
         if (emptyFields.length > 0) {
             return res.json({ success: 0, message: 'The following fields are required:' + emptyFields.join(','), fields: emptyFields });
@@ -299,10 +299,13 @@ exports.store_profile = async (req, res) => {
             request_id: new_request_id,
             custom_request_id: prefix + String(new_request_id).padStart(10, '0'),
             name: name,
-            email: email.toLowerCase(),
+
             mobile: mobile,
             role: role
 
+        }
+        if (req.body.email) {
+            data['email'] = email.toLowerCase()
         }
 
         if (req.files.image) {

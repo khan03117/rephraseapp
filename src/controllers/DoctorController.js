@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const DoctorSpecialization = require("../models/DoctorSpecialization");
 const User = require("../models/User");
+const Specialization = require("../models/Specialization");
 
 exports.handle_specility = async (req, res) => {
     const { doctor_id } = req.params;
@@ -29,12 +30,33 @@ exports.get_specility = async (req, res) => {
     return res.json({ success: 1, message: "List of specilities", data: resps });
 }
 exports.getDoctorWithSpecialization = async (req, res) => {
-    const { url, id } = req.query;
+    const { url, id, languages = [], specility = [], mode = [], page = 1, perPage = 10 } = req.query;
 
 
     try {
+        const languagesArr = Array.isArray(languages) ? languages : languages.split(',').filter(Boolean);
+        const specilityArr = Array.isArray(specility) ? specility : specility.split(',').filter(Boolean);
+        const modeArr = Array.isArray(mode) ? mode : mode.split(',').filter(Boolean);
+
         const fdata = {
             "role": "Doctor"
+        }
+        if (languagesArr.length) {
+            fdata['languages'] = { $in: languagesArr };
+        }
+        if (specilityArr.length > 0) {
+            const finddoctors = await DoctorSpecialization.find({ specialization: { $in: specilityArr } });
+            if (finddoctors.length > 0) {
+                const docids = finddoctors.map(itm => itm.doctor);
+                fdata['_id'] = { $in: docids };
+            } else {
+                return res.json({ success: 1, data: [], message: 'Not found', pagination: { perPage, page, totalPages: 1, totalDocs: 0 } })
+            }
+
+        }
+
+        if (modeArr.length) {
+            fdata['mode'] = { $in: modeArr };
         }
         if (url) {
             const usr = await User.findOne({ slug: url }).lean();
@@ -42,6 +64,9 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                 fdata['_id'] = usr._id;
             }
         }
+        const totalDocs = await User.countDocuments(fdata);
+        const totalPages = Math.ceil(totalDocs / perPage);
+        const skip = (page - 1) * perPage;
 
 
         const doctors = await User.aggregate([
@@ -53,7 +78,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     from: "doctorspecializations",
                     localField: "_id",
                     foreignField: "doctor",
-                    as: "specializations"
+                    as: "specializations",
                 }
             },
             {
@@ -61,9 +86,11 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     from: "specializations",
                     localField: "specializations.specialization",
                     foreignField: "_id",
-                    as: "specializationDetails"
+                    as: "specializationDetails",
+
                 }
             },
+
             {
                 $lookup: {
                     from: "slots",
@@ -78,6 +105,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     ]
                 }
             },
+
 
             {
                 $project: {
@@ -101,6 +129,8 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     roles: 1,
                     mci_number: 1,
                     coordinates: 1,
+                    languages: 1,
+                    mode: 1,
                     state: 1,
                     city: 1,
                     pincode: 1,
@@ -145,10 +175,28 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     updatedAt: 1,
                     specializationDetails: { title: 1, _id: 1 }
                 }
-            }
+            },
+            {
+                $addFields: {
+                    nearestSlotTime: {
+                        $cond: [
+                            { $gt: [{ $size: "$slots" }, 0] },
+                            { $min: "$slots.start_time" },
+                            null
+                        ]
+                    }
+                }
+            },
+            {
+                $sort: {
+                    nearestSlotTime: 1
+                }
+            },
+            { $skip: skip },
+            { $limit: perPage },
         ]);
-
-        return res.json({ success: 1, message: "List of doctors", data: doctors })
+        const pagination = { perPage, page, totalPages, totalDocs }
+        return res.json({ success: 1, message: "List of doctors", data: doctors, pagination })
     } catch (error) {
         console.error("Error fetching doctor with specialization:", error);
     }
