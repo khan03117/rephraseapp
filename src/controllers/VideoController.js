@@ -33,7 +33,10 @@ exports.create_video = async (req, res) => {
 exports.get_video = async (req, res) => {
     const { page_name } = req.params;
     const { id, url, page = 1, perPage = 10, category } = req.query;
-    const fdata = { page_section: page_name };
+    const fdata = {};
+    if (page_name) {
+        fdata['page_section'] = page_name
+    }
     if (id) {
         fdata['_id'] = id
     }
