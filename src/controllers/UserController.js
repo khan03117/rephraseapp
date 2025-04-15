@@ -242,7 +242,7 @@ exports.user_list = async (req, res) => {
         const pagination = {
             page: page,
             perPage,
-            totalPage,
+            totalPages: totalPage,
             totalDocs: totaldocs
         };
         return res.json({ success: 1, message: "list of users", data: resp, pagination, fdata });
