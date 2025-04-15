@@ -6,7 +6,7 @@ const blogSchema = new mongoose.Schema({
     title: { type: String, required: true, trim: true },
     categories: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",
+        ref: "Specialization",
         default: null
     }],
     banner: { type: String },
