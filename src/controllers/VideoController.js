@@ -38,10 +38,11 @@ exports.get_video = async (req, res) => {
         fdata['_id'] = id
     }
     if (category) {
-        const sdata = {
-            title: { $regex: category, $options: "i" }
-        }
-        const foundspec = await Specialization.find(sdata);
+        const categories = category.split(',').map(cat => cat.trim()).filter(Boolean);
+        const regexQueries = categories.map(cat => ({
+            title: { $regex: cat, $options: "i" }
+        }));
+        const foundspec = await Specialization.find({ $or: regexQueries });
         if (foundspec.length > 0) {
             fdata['specialization'] = { $in: foundspec.map(itm => itm._id) }
         } else {
