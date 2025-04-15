@@ -1,15 +1,10 @@
-const { validationResult } = require("express-validator");
 const FaqModel = require('../models/Faq');
 
 const _create = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.json({ errors: errors.array(), success: 0 });
-    }
     const { question, answer } = req.body;
     const data = new FaqModel({ question: question, answer: answer });
     await data.save().then((resp) => {
-        return res.json({ data: resp, errors: errors, success: 1, message: "Faq created successfully." })
+        return res.json({ data: resp, success: 1, message: "Faq created successfully." })
     })
 }
 const getAll = async (req, res) => {
