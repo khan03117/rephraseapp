@@ -42,7 +42,7 @@ exports.create_booking = async (req, res) => {
 exports.get_booking = async (req, res) => {
     const userId = req.user._id;
     const role = req.user.role;
-    const { date } = req.query;
+    const { date, page = 1, perPage = 10 } = req.query;
     const fdata = {}
     if (role == "User") {
         fdata['user'] = userId
@@ -53,6 +53,9 @@ exports.get_booking = async (req, res) => {
     if (date) {
         fdata["date"] = moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate();
     }
+    const totalDocs = await Booking.countDocuments(fdata);
+    const totalPages = Math.ceil(totalDocs / perPage);
+    const skip = (page - 1) * perPage;
     let bookings = await Booking.find(fdata).populate({
         path: 'doctor',
         select: 'custom_request_id name mobile gender dob address role profile_image'
@@ -62,7 +65,7 @@ exports.get_booking = async (req, res) => {
     }).populate({
         path: 'slots',
         select: 'date start_time end_time status'
-    }).sort({ booking_date: -1 }).lean();
+    }).sort({ booking_date: -1 }).skip(skip).limit(perPage).lean();
 
     bookings = bookings.map(booking => ({
         ...booking,
@@ -74,5 +77,6 @@ exports.get_booking = async (req, res) => {
             date: moment.utc(slot.date).tz("Asia/Kolkata").format("YYYY-MM-DD")
         }))
     }));
-    return res.json({ success: 1, message: "List of bookings", data: bookings });
+    const pagination = { perPage, page, totalPages, totalDocs };
+    return res.json({ success: 1, message: "List of bookings", data: bookings, pagination });
 }
