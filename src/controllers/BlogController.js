@@ -57,7 +57,7 @@ exports.get_blog = async (req, res) => {
             page,
             totalDocs
         }
-        const resp = await Blog.find(fdata).sort({ createdAt: -1 }).skip(skip).limit(perPage);
+        const resp = await Blog.find(fdata).populate('categories').sort({ createdAt: -1 }).skip(skip).limit(perPage);
         return res.json({ success: 1, message: "Testimonial fetched successfull", data: resp, pagination });
     } catch (err) {
         return res.json({ success: 0, message: err.message });
