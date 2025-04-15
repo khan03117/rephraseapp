@@ -43,7 +43,7 @@ exports.get_blog = async (req, res) => {
             }));
             const foundspec = await Specialization.find({ $or: regexQueries });
             if (foundspec.length > 0) {
-                fdata['category'] = { $in: foundspec.map(itm => itm._id) }
+                fdata['categories'] = { $in: foundspec.map(itm => itm._id) }
             } else {
                 return res.json({ success: 1, message: "Not found", data: [] });
             }
