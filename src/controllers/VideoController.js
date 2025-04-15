@@ -43,7 +43,7 @@ exports.get_video = async (req, res) => {
         }
         const foundspec = await Specialization.find(sdata);
         if (foundspec.length > 0) {
-            fdata['category'] = { $in: foundspec.map(itm => itm._id) }
+            fdata['specialization'] = { $in: foundspec.map(itm => itm._id) }
         } else {
             return res.json({ success: 1, message: "Not found", data: [] });
         }
@@ -61,7 +61,7 @@ exports.get_video = async (req, res) => {
         path: 'specialization',
         select: 'title '
     }).sort({ createdAt: -1 }).skip(skip).limit(perPage);
-    return res.json({ success: 1, data: resp, message: "List of videos", pagination });
+    return res.json({ success: 1, data: resp, message: "List of videos", pagination, fdata });
 
 }
 exports.delete_video = async (req, res) => {

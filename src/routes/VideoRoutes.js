@@ -21,5 +21,19 @@ router.post('/', store.fields([
 
 ]), create_video);
 router.delete('/delete/:id', delete_video);
-router.put('/update/:id', update_video);
+router.put('/update/:id', store.fields([
+    {
+        name: "banner",
+        maxCount: 1
+    },
+    {
+        name: "thumbnail",
+        maxCount: 1
+    },
+    {
+        name: "video",
+        maxCount: 1
+    }
+
+]), update_video);
 module.exports = router;
