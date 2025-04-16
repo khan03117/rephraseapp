@@ -47,7 +47,7 @@ exports.get_booking = async (req, res) => {
     if (role == "User") {
         fdata['user'] = userId
     }
-    if (role == "User") {
+    if (role == "Doctor") {
         fdata['doctor'] = userId
     }
     if (date) {
@@ -58,7 +58,7 @@ exports.get_booking = async (req, res) => {
     const skip = (page - 1) * perPage;
     let bookings = await Booking.find(fdata).populate({
         path: 'doctor',
-        select: 'custom_request_id name mobile gender dob address role profile_image'
+        select: 'custom_request_id name mobile gender dob address role profile_image profession'
     }).populate({
         path: "user",
         select: 'custom_request_id name mobile gender dob address role profile_image'
