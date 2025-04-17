@@ -102,6 +102,9 @@ const schema = new Schema({
     mode: {
         type: [String]
     },
+    experience: {
+        type: String
+    },
     educational_qualification: {
         type: String
     },
