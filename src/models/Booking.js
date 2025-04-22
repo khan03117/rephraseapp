@@ -17,6 +17,14 @@ const bookingSchema = new Schema({
     duration: {
         type: Number
     },
+    language: {
+        type: String
+    },
+    mode: {
+        type: String,
+        enum: ['Online', 'Offline'],
+        default: "Online"
+    },
     slots: [{
         type: Schema.Types.ObjectId,
         ref: "Slot"
@@ -29,7 +37,13 @@ const bookingSchema = new Schema({
     },
     status: {
         type: String
+    },
+    is_completed: {
+        type: String,
+        enum: ['Pending', 'Completed'],
+        default: "Pending"
     }
+
 }, { timestamps: true });
 
 module.exports = model('Booking', bookingSchema); // Removed "new"
