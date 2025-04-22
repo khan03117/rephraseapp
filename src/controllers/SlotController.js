@@ -185,8 +185,9 @@ exports.getAllSlots = async (req, res) => {
     if (doctor_id) {
         fdata["doctor"] = doctor_id;
     }
-
-
+    if (req.user.role == "Doctor") {
+        fdata['doctor'] = req.user._id
+    }
     const resp = await Slot.find(fdata).populate({
         path: "doctor",
         select: "name profile_image mobile role"
