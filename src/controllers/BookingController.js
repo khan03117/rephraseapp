@@ -42,7 +42,7 @@ exports.create_booking = async (req, res) => {
 exports.get_booking = async (req, res) => {
     const userId = req.user._id;
     const role = req.user.role;
-    const { date, page = 1, perPage = 10, status, eventTiming } = req.query;
+    const { date, page = 1, perPage = 10, status, event_timing } = req.query;
 
     const timezone = "Asia/Kolkata";
     const todayStart = moment.tz(timezone).startOf("day").utc().toDate();
@@ -55,17 +55,17 @@ exports.get_booking = async (req, res) => {
     if (role == "Doctor") {
         fdata['doctor'] = userId
     }
-    if (eventTiming) {
-        if (eventTiming == "Upcoming") {
+    if (event_timing) {
+        if (event_timing == "Upcoming") {
             // Events after today
             fdata["date"] = { $gte: todayEnd.toDate() };
-        } else if (eventTiming == "Today") {
+        } else if (event_timing == "Today") {
             // Events happening today
             fdata["date"] = {
                 $gte: todayStart.toDate(),
                 $lte: todayEnd.toDate(),
             };
-        } else if (eventTiming == "Past") {
+        } else if (event_timing == "Past") {
             // Events before today
             fdata["date"] = { $lt: todayStart.toDate() };
         }
