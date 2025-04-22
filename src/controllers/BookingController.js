@@ -1,44 +1,39 @@
 const Booking = require("../models/Booking");
 const Slot = require("../models/Slot");
 const moment = require("moment-timezone");
-
 exports.create_booking = async (req, res) => {
     const userId = req.user._id;
-    const { doctor_id, slot_ids, duration } = req.body;
-    if (![30, 60].includes(duration)) {
-        return res.json({ success: 0, message: "Invalid duration. Only 30 or 60 minutes allowed." });
-    }
-    const slots = await Slot.find({ _id: { $in: slot_ids }, doctor: doctor_id, status: "available" })
-        .sort({ start_time: 1 }) // Sort to ensure sequential order
+    const { doctor_id, slot_id, booking_date } = req.body;
+
+    const slots = await Slot.findOne({ _id: slot_id, doctor: doctor_id, status: "available" })
+        .sort({ start_time: 1 })
         .lean();
-    if (slots.length !== slot_ids.length) {
-        return res.json({ success: 0, message: "Some slots are already booked or invalid." });
+
+    if (!slots) {
+        return res.status(400).json({ success: 0, message: "Slot not available or already booked" });
     }
-    for (let i = 1; i < slots.length; i++) {
-        const prevSlotEnd = moment.utc(slots[i - 1].end_time);
-        const currentSlotStart = moment.utc(slots[i].start_time);
-        if (!prevSlotEnd.isSame(currentSlotStart)) {
-            return res.status(400).json({ success: 0, message: "Slots must be consecutive with no gaps." });
-        }
-    }
-    const expectedSlotCount = duration == 30 ? 1 : 2;
-    if (slots.length !== expectedSlotCount) {
-        return res.json({ success: 0, message: `For ${duration}-minute booking, select ${expectedSlotCount} consecutive slot(s).` });
-    }
-    const booking = await Booking.create({
+
+    // Extract the time part from slot and apply it to the booking_date
+    const slotStart = moment(slots.start_time).tz("Asia/Kolkata").format("HH:mm");
+    const slotEnd = moment(slots.end_time).tz("Asia/Kolkata").format("HH:mm");
+
+    const start_at = moment.tz(`${booking_date} ${slotStart}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc().toDate();
+    const end_at = moment.tz(`${booking_date} ${slotEnd}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc().toDate();
+
+    const bdata = {
         user: userId,
         doctor: doctor_id,
-        slots: slot_ids,
-        booking_date: moment.tz(slots[0].start_time, "Asia/Kolkata").startOf("day").utc().toDate(),
-        start_time: slots[0].start_time,
-        end_time: slots[slots.length - 1].end_time,
-        duration,
+        booking_date: moment.tz(booking_date, "Asia/Kolkata").startOf("day").utc().toDate(),
+        start_at,
+        end_at,
+        duration: (end_at.getTime() - start_at.getTime()) / 60000,
         status: "booked"
-    });
-    await Slot.updateMany({ _id: { $in: slot_ids } }, { $set: { status: "booked" } });
-    return res.json({ success: 1, message: "Booking successful", data: booking });
+    };
 
-}
+    const booking = await Booking.create(bdata);
+    return res.json({ success: 1, message: "Booking successful", data: booking });
+};
+
 exports.get_booking = async (req, res) => {
     const userId = req.user._id;
     const role = req.user.role;

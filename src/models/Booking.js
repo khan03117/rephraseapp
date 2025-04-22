@@ -14,6 +14,12 @@ const bookingSchema = new Schema({
     booking_date: {
         type: Date,
     },
+    start_at: {
+        type: Date,
+    },
+    end_at: {
+        type: Date,
+    },
     duration: {
         type: Number
     },
@@ -27,14 +33,10 @@ const bookingSchema = new Schema({
     },
     slots: [{
         type: Schema.Types.ObjectId,
-        ref: "Slot"
+        ref: "Slot",
+        default: null
     }],
-    start_at: {
-        type: Date,
-    },
-    end_at: {
-        type: Date,
-    },
+
     status: {
         type: String
     },
