@@ -57,21 +57,21 @@ exports.get_booking = async (req, res) => {
     }
     if (event_timing) {
         if (event_timing == "Upcoming") {
-            fdata["date"] = { $gte: todayEnd };
+            fdata["booking_date"] = { $gte: todayEnd };
         } else if (event_timing == "Today") {
-            fdata["date"] = {
+            fdata["booking_date"] = {
                 $gte: todayStart,
                 $lte: todayEnd,
             };
         } else if (event_timing == "Past") {
-            fdata["date"] = { $lt: todayStart };
+            fdata["booking_date"] = { $lt: todayStart };
         }
     }
     if (status) {
         fdata['status'] = status;
     }
     if (date) {
-        fdata["date"] = moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate();
+        fdata["booking_date"] = moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate();
     }
     const totalDocs = await Booking.countDocuments(fdata);
     const totalPages = Math.ceil(totalDocs / perPage);
@@ -89,7 +89,7 @@ exports.get_booking = async (req, res) => {
 
     bookings = bookings.map(booking => ({
         ...booking,
-        booking_date: booking.booking_date,
+        booking_date: moment.utc(booking.booking_date).tz("Asia/Kolkata").format("YYYY-MM-DD"),
         slots: booking.slots.map(slot => ({
             ...slot,
             start_time: moment.utc(slot.start_time).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss"),
@@ -98,5 +98,5 @@ exports.get_booking = async (req, res) => {
         }))
     }));
     const pagination = { perPage, page, totalPages, totalDocs };
-    return res.json({ success: 1, message: "List of bookings", data: bookings, pagination });
+    return res.json({ success: 1, message: "List of bookings", data: bookings, pagination, fdata });
 }
