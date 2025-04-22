@@ -57,17 +57,14 @@ exports.get_booking = async (req, res) => {
     }
     if (event_timing) {
         if (event_timing == "Upcoming") {
-            // Events after today
-            fdata["date"] = { $gte: todayEnd.toDate() };
+            fdata["date"] = { $gte: todayEnd };
         } else if (event_timing == "Today") {
-            // Events happening today
             fdata["date"] = {
-                $gte: todayStart.toDate(),
-                $lte: todayEnd.toDate(),
+                $gte: todayStart,
+                $lte: todayEnd,
             };
         } else if (event_timing == "Past") {
-            // Events before today
-            fdata["date"] = { $lt: todayStart.toDate() };
+            fdata["date"] = { $lt: todayStart };
         }
     }
     if (status) {
