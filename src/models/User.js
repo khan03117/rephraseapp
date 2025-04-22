@@ -14,7 +14,8 @@ const schema = new Schema({
     },
     profile_image: {
         type: String,
-        trim: true
+        trim: true,
+        default: null
     },
     name: {
         type: String,
