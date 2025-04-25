@@ -3,6 +3,7 @@ const OtpModel = require("../models/Otp");
 const DoctorSpecialization = require("../models/DoctorSpecialization");
 const SECRET_KEY = process.env.SECRET_KEY;
 const jwt = require('jsonwebtoken');
+const Clinic = require("../models/Clinic");
 async function generateUniqueSlug(name) {
     const baseSlug = name
         .toLowerCase()
@@ -299,7 +300,6 @@ exports.store_profile = async (req, res) => {
             request_id: new_request_id,
             custom_request_id: prefix + String(new_request_id).padStart(10, '0'),
             name: name,
-
             mobile: mobile,
             role: role
 
@@ -342,6 +342,17 @@ exports.store_profile = async (req, res) => {
             arr.forEach(async itm => {
                 await DoctorSpecialization.create({ doctor: doctor_id, specialization: itm });
             })
+        }
+        if (req.body.clinics) {
+
+            const clinics = JSON.parse(req.body.clinics); // clinics should be a JSON string
+            for (const clinicdata of clinics) {
+                await Clinic.create({
+                    ...clinicdata,
+                    doctor: resp._id
+                });
+            }
+
         }
         const token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "1 days" })
 

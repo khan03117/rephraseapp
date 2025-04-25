@@ -105,6 +105,14 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     ]
                 }
             },
+            {
+                $lookup: {
+                    from: "clinics",
+                    localField: "_id",
+                    foreignField: "doctor",
+                    as: "clinics",
+                }
+            },
 
 
             {
@@ -173,7 +181,8 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     jwt_token: 1,
                     createdAt: 1,
                     updatedAt: 1,
-                    specializationDetails: { title: 1, _id: 1 }
+                    specializationDetails: { title: 1, _id: 1 },
+                    clinics: 1
                 }
             },
             {
