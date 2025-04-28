@@ -48,9 +48,9 @@ exports.create_slot = async (req, res) => {
     }
 };
 exports.create_slot_by_weekdays = async (req, res) => {
-    const doctorId = req.user._id;
-    const { date, dayname, availability, slot_type, block_type, block_at, duration, gap } = req.body;
 
+    const doctorId = req.user._id;
+    const { date, dayname, availability, slot_type, block_type, block_at, duration, gap, clinic } = req.body;
     // Check if duration and gap are provided
     if (!duration) {
         return res.json({ success: 0, data: null, message: "Duration is mandatory" });
@@ -88,6 +88,7 @@ exports.create_slot_by_weekdays = async (req, res) => {
                 doctor: doctorId,
                 weekdayName,
                 date: slotDate,
+                clinic: clinic,
                 start_time: startTime.toDate(),
                 end_time: slotEndTime.toDate(),
                 status: "available",
@@ -133,47 +134,31 @@ exports.create_slot_by_weekdays = async (req, res) => {
     return res.json({ success: 1, message: "Slots added successfully", data: resp });
 };
 
-
-
-
 exports.get_slot = async (req, res) => {
     try {
         const { date, doctor_id } = req.query;
         if (!date || !doctor_id) {
             return res.status(400).json({ message: "Missing required parameters" });
         }
-
-        // Convert date to JS Date and get weekday
         const inputDate = moment.tz(date, "Asia/Kolkata").toDate();
         const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         const weekdayName = weekdays[inputDate.getDay()];
-
-        // Get base slots by weekdayName + doctor
         const baseSlots = await Slot.find({ weekdayName, doctor: doctor_id }).lean().sort({ start_time: 1 });
-
-        // Get all bookings and blocked slots on the specific date
         const bookings = await Booking.find({ booking_date: moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate(), doctor: doctor_id }).lean();
         const blockedSlots = await Slot.find({ date, status: "blocked", doctor: doctor_id }).lean();
-
-        // Helper: compare only time part (HH:mm in IST)
         const isSameTime = (t1, t2) => {
             const time1 = moment(t1).tz("Asia/Kolkata").format("HH:mm");
             const time2 = moment(t2).tz("Asia/Kolkata").format("HH:mm");
             return time1 == time2;
         };
-
-        // Map each base slot to its status for the given date
         const slotsWithStatus = baseSlots.map(slot => {
             const startIST = moment(slot.start_time).tz("Asia/Kolkata").format("HH:mm");
             const endIST = moment(slot.end_time).tz("Asia/Kolkata").format("HH:mm");
-
             const isBlocked = blockedSlots.some(b => isSameTime(b.start_time, slot.start_time));
             const isBooked = bookings.some(b =>
                 isSameTime(b.start_at, slot.start_time) &&
                 isSameTime(b.end_at, slot.end_time)
             );
-
-            // Return only necessary fields
             return {
                 _id: slot._id,
                 doctor: slot.doctor,
@@ -185,9 +170,7 @@ exports.get_slot = async (req, res) => {
                 updatedAt: slot.updatedAt,
             };
         });
-
         res.status(200).json(slotsWithStatus);
-
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server error" });
