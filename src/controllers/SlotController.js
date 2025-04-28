@@ -2,6 +2,8 @@ const { response } = require("express");
 const Slot = require("../models/Slot");
 const moment = require("moment-timezone");
 const Booking = require("../models/Booking");
+const User = require("../models/User");
+const Clinic = require("../models/Clinic");
 exports.create_slot = async (req, res) => {
     const doctorId = req.user._id;
     const { date, availability, slot_type, block_type, block_at, duration, gap } = req.body;
@@ -48,129 +50,97 @@ exports.create_slot = async (req, res) => {
     }
 };
 exports.create_slot_by_weekdays = async (req, res) => {
+    try {
+        const { date, dayname, availability, duration, gap, clinic } = req.body;
+        const doctorId = req.user._id;
+        const finddoctor = await User.findOne({ _id: doctorId, role: "Doctor" });
+        const findClinics = await Clinic.find({ doctor: doctorId });
+        if (!finddoctor) {
+            return res.json({ success: 0, data: null, message: "Only doctor can add slots" });
+        }
+        if (findClinics.length > 0 && !clinic) {
+            return res.json({ success: 0, data: null, message: "Please select clinic" });
+        }
+        if (!duration) {
+            return res.json({ success: 0, data: null, message: "Duration is mandatory." });
+        }
+        if (!gap) {
+            return res.json({ success: 0, data: null, message: "Gap is mandatory." });
+        }
+        if (!dayname) {
+            return res.json({ success: 0, data: null, message: "Dayname is mandatory." });
+        }
+        if (!availability || !Array.isArray(availability) || availability.length === 0) {
+            return res.json({ success: 0, data: null, message: "Availability array is mandatory and should not be empty." });
+        }
+        const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        if (!weekdays.includes(dayname)) {
+            return res.json({ success: 0, data: null, message: "Please enter a correct dayname (e.g., Monday)." });
+        }
+        let slotDate = null;
+        let weekdayName = dayname;
+        if (date) {
+            const parsedDate = new Date(date);
 
-    const doctorId = req.user._id;
-    const { date, dayname, availability, slot_type, block_type, block_at, duration, gap, clinic } = req.body;
-    // Check if duration and gap are provided
-    if (!duration) {
-        return res.json({ success: 0, data: null, message: "Duration is mandatory" });
-    }
-    if (!gap) {
-        return res.json({ success: 0, data: null, message: "Gap is mandatory" });
-    }
+            if (isNaN(parsedDate)) {
+                return res.json({ success: 0, data: null, message: "Invalid date format." });
+            }
 
-    const slot_date = new Date(date);
-    const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            // Get correct weekday from date
+            weekdayName = weekdays[parsedDate.getDay()];
 
-    // Validate the weekday
-    if (!weekdays.includes(dayname)) {
-        return res.json({ success: 0, data: null, message: "Please enter correct dayname" });
-    }
-
-    let weekdayName = dayname;
-    if (date) {
-        weekdayName = weekdays[slot_date.getDay()];
-    }
-
-    // Convert date to UTC timezone
-    const slotDate = moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate();
-
-    // Function to generate time slots based on the given start and end times
-    const generateTimeSlots = (date, start, end) => {
-        let slots = [];
-        let startTime = moment.tz(`${date} ${start}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc();
-        let endTime = moment.tz(`${date} ${end}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc();
-
-        // Generate the slots
-        while (startTime.isBefore(endTime)) {
-            let slotEndTime = startTime.clone().add(duration, "minutes");
-            slots.push({
-                doctor: doctorId,
-                weekdayName,
-                date: slotDate,
-                clinic: clinic,
-                start_time: startTime.toDate(),
-                end_time: slotEndTime.toDate(),
-                status: "available",
-                slot_type,
-                block_type,
-                block_at: block_at ? moment.tz(block_at, "Asia/Kolkata").utc().toDate() : null
-            });
-            slotEndTime = slotEndTime.clone().add(gap, "minutes");
-            startTime = slotEndTime;
+            // Convert date to start of day UTC (Asia/Kolkata timezone)
+            slotDate = moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate();
         }
 
-        return slots;
-    };
+        const slotsToSave = [];
 
-    // Flatten all the generated slots based on the availability array
-    let slotsToSave = [];
-    availability.forEach(slot => {
-        slotsToSave.push(...generateTimeSlots(date, slot.start_time, slot.end_time));
-    });
-
-    // Fetch the existing slots for the doctor on the same weekday
-    const existingSlots = await Slot.find({ doctor: doctorId, weekdayName });
-
-    // Check for overlapping slots: filter out any slot that overlaps with existing ones
-    const newSlots = slotsToSave.filter(newSlot => {
-        return !existingSlots.some(existingSlot => {
-            return (
-                moment(newSlot.start_time).isBefore(existingSlot.end_time) &&
-                moment(newSlot.end_time).isAfter(existingSlot.start_time)
-            );
+        for (const range of availability) {
+            let start = moment(range.start_time, "HH:mm");
+            const end = moment(range.end_time, "HH:mm");
+            while (start.clone().add(duration, 'minutes').isSameOrBefore(end)) {
+                const slotStartTime = start.format("HH:mm");
+                const slotEndTime = start.clone().add(duration, 'minutes').format("HH:mm");
+                const newSlot = {
+                    doctor: doctorId,
+                    clinic: clinic || null,
+                    date: slotDate || null, // if provided
+                    weekdayName: weekdayName,
+                    start_time: slotStartTime, // Save as "HH:mm" string
+                    end_time: slotEndTime,
+                    status: "available",
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+                slotsToSave.push(newSlot);
+                start = start.clone().add(duration + gap, 'minutes');
+            }
+        }
+        if (slotsToSave.length > 0) {
+            const de_dat = { doctor: doctorId, weekdayName };
+            if (clinic) {
+                de_dat['clinic'] = clinic;
+            }
+            await Slot.deleteMany(de_dat);
+            await Slot.insertMany(slotsToSave);
+        }
+        return res.status(201).json({
+            success: 1,
+            message: "Slots created successfully.",
+            total_slots: slotsToSave.length,
+            data: slotsToSave
         });
-    });
 
-    // If there are no new slots (all are overlaps), return a message
-    if (newSlots.length === 0) {
-        return res.json({ success: 0, message: "No new slots to add (overlap detected)", data: [] });
+    } catch (error) {
+        console.error("Error in create_slot_by_weekdays:", error);
+        return res.status(500).json({ success: 0, data: null, message: "Server error while creating slots." });
     }
-
-    // Insert the new slots into the database (don't delete existing ones)
-    const resp = await Slot.insertMany(newSlots);
-
-    // Return success response
-    return res.json({ success: 1, message: "Slots added successfully", data: resp });
 };
 
 exports.get_slot = async (req, res) => {
     try {
         const { date, doctor_id } = req.query;
-        if (!date || !doctor_id) {
-            return res.status(400).json({ message: "Missing required parameters" });
-        }
-        const inputDate = moment.tz(date, "Asia/Kolkata").toDate();
-        const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        const weekdayName = weekdays[inputDate.getDay()];
-        const baseSlots = await Slot.find({ weekdayName, doctor: doctor_id }).lean().sort({ start_time: 1 });
-        const bookings = await Booking.find({ booking_date: moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate(), doctor: doctor_id }).lean();
-        const blockedSlots = await Slot.find({ date, status: "blocked", doctor: doctor_id }).lean();
-        const isSameTime = (t1, t2) => {
-            const time1 = moment(t1).tz("Asia/Kolkata").format("HH:mm");
-            const time2 = moment(t2).tz("Asia/Kolkata").format("HH:mm");
-            return time1 == time2;
-        };
-        const slotsWithStatus = baseSlots.map(slot => {
-            const startIST = moment(slot.start_time).tz("Asia/Kolkata").format("HH:mm");
-            const endIST = moment(slot.end_time).tz("Asia/Kolkata").format("HH:mm");
-            const isBlocked = blockedSlots.some(b => isSameTime(b.start_time, slot.start_time));
-            const isBooked = bookings.some(b =>
-                isSameTime(b.start_at, slot.start_time) &&
-                isSameTime(b.end_at, slot.end_time)
-            );
-            return {
-                _id: slot._id,
-                doctor: slot.doctor,
-                weekdayName: slot.weekdayName,
-                start_time: startIST,
-                end_time: endIST,
-                status: isBlocked ? "blocked" : isBooked ? "booked" : "available",
-                createdAt: slot.createdAt,
-                updatedAt: slot.updatedAt,
-            };
-        });
-        res.status(200).json(slotsWithStatus);
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server error" });

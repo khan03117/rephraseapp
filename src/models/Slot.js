@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
-
 const slotSchema = new mongoose.Schema({
     doctor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    date: { type: Date }, // Stores only the date
+    date: { type: Date },
     weekdayName: {
         type: String
     },
@@ -11,14 +10,18 @@ const slotSchema = new mongoose.Schema({
         ref: "Clinic",
         default: null
     },
-    start_time: { type: Date }, // Start time of each 30-min slot
-    end_time: { type: Date }, // End time of each 30-min slot
+    start_time: {
+        type: String
+    },
+    end_time: {
+        type: String
+    },
     status: { type: String, enum: ["available", "booked", "blocked"], default: "available" },
     block_type: { type: String, default: null },
     block_at: { type: Date, default: null },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
-});
+}, { timestamps: true });
 
 const Slot = mongoose.model("Slot", slotSchema);
 

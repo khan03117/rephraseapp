@@ -201,8 +201,8 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     nearestSlotTime: 1
                 }
             },
-            { $skip: skip },
-            { $limit: perPage },
+            { $skip: parseInt(skip) },
+            { $limit: parseInt(perPage) },
         ]);
         const pagination = { perPage, page, totalPages, totalDocs }
         return res.json({ success: 1, message: "List of doctors", data: doctors, pagination })

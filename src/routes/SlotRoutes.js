@@ -6,5 +6,5 @@ const router = Router();
 router.post('/', Auth, create_slot);
 router.post('/by-weekdayname', Auth, create_slot_by_weekdays);
 router.get('/', get_slot);
-router.get('/all', getAllSlots);
+router.get('/all', Auth, getAllSlots);
 module.exports = router;
