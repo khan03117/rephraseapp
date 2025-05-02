@@ -168,10 +168,10 @@ exports.create_slot = async (req, res) => {
 };
 exports.get_slot = async (req, res) => {
     try {
-        const { dayname, date, clinic, duration = 30 } = req.query;
+        const { dayname, date, clinic } = req.query;
         const fdata = {};
-        if (req.user.role == "Clinic") {
-            fdata['clinic'] = req.user._id
+        if (req.user.role == "doctor") {
+            fdata['doctor'] = req.user._id
         }
         const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         // if (date) {
