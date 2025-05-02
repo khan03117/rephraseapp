@@ -7,7 +7,7 @@ router.post('/', Auth, create_slot);
 router.post('/by-weekdayname', Auth, create_slot_by_weekdays);
 router.post('/holiday', Auth, mark_holiday);
 router.post('/block', Auth, block_slot);
-router.get('/', get_slot);
+router.get('/', Auth, get_slot);
 router.delete('/delete/:id', Auth, deleteSlot);
 
 module.exports = router;
