@@ -205,7 +205,7 @@ exports.get_slot = async (req, res) => {
 
         const slots = await Slot.find(fdata).populate({
             path: 'clinic',
-            select: 'name email mobile profile_image role'
+            select: 'title email mobile profile_image role'
         }).lean().sort({ start_time: 1 });
         const today = moment().tz('Asia/Kolkata').format('YYYY-MM-DD');
         const formattedSlots = slots.map(slot => ({
