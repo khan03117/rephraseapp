@@ -320,7 +320,7 @@ exports.deleteSlot = async (req, res) => {
         if (!findclinic) {
             return res.json({ success: 0, message: "Only doctor can add slots", data: null })
         }
-        const { slot } = req.body;
+        const { slot } = req.params;
         const findSlot = await Slot.findOne({ _id: slot, doctor: doctor_id });
         if (!findSlot) {
             return res.json({ success: 0, message: "No slot found" });
