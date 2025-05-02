@@ -16,6 +16,10 @@ const slotSchema = new mongoose.Schema({
     end_time: {
         type: String
     },
+    isHoliday: {
+        type: Boolean,
+        default: false
+    },
     status: { type: String, enum: ["available", "booked", "blocked"], default: "available" },
     block_type: { type: String, default: null },
     block_at: { type: Date, default: null },
