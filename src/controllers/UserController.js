@@ -344,7 +344,6 @@ exports.store_profile = async (req, res) => {
             })
         }
         if (req.body.clinics) {
-
             const clinics = JSON.parse(req.body.clinics); // clinics should be a JSON string
             for (const clinicdata of clinics) {
                 await Clinic.create({
@@ -352,7 +351,6 @@ exports.store_profile = async (req, res) => {
                     doctor: resp._id
                 });
             }
-
         }
         const token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "1 days" })
 
