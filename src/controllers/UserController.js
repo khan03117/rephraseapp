@@ -304,6 +304,12 @@ exports.store_profile = async (req, res) => {
             role: role
 
         }
+        if (req.body.mode) {
+            data['mode'] = JSON.parse(req.body.mode);
+        }
+        if (req.body.languages) {
+            data['languages'] = JSON.parse(req.body.languages);
+        }
         if (req.body.email) {
             data['email'] = email.toLowerCase()
         }
