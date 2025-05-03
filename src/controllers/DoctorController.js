@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const DoctorSpecialization = require("../models/DoctorSpecialization");
 const User = require("../models/User");
 const Specialization = require("../models/Specialization");
+const Clinic = require("../models/Clinic");
 
 exports.handle_specility = async (req, res) => {
     const { doctor_id } = req.params;
@@ -43,6 +44,12 @@ exports.getDoctorWithSpecialization = async (req, res) => {
         }
         if (languagesArr.length) {
             fdata['languages'] = { $in: languagesArr };
+        }
+        if (req.user) {
+            if (req.user.role == "Doctor") {
+                const finnddoc = await User.findOne({ _id: req.user._id });
+                fdata['_id'] = finnddoc._id;
+            }
         }
         if (specilityArr.length > 0) {
             const finddoctors = await DoctorSpecialization.find({ specialization: { $in: specilityArr } });
@@ -210,6 +217,16 @@ exports.getDoctorWithSpecialization = async (req, res) => {
         console.error("Error fetching doctor with specialization:", error);
     }
 }
-exports.add_appointment = async (req, res) => {
-
+exports.clinics = async (req, res) => {
+    try {
+        const { id, page = 10, perPage = 10 } = req.query;
+        const fdata = {};
+        if (req.user.role == "Doctor") {
+            fdata['doctor'] = req.user._id;
+        }
+        const items = await Clinic.find(fdata);
+        return res.json({ success: 1, data: items, message: "List of clinics" });
+    } catch (err) {
+        return res.json({ success: 0, message: err.message });
+    }
 }
