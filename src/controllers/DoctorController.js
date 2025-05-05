@@ -71,6 +71,13 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                 fdata['_id'] = usr._id;
             }
         }
+        if (id) {
+            const usr = await User.findOne({ _id: id }).lean();
+            if (usr) {
+                fdata['_id'] = usr._id;
+            }
+        }
+
         const totalDocs = await User.countDocuments(fdata);
         const totalPages = Math.ceil(totalDocs / perPage);
         const skip = (page - 1) * perPage;
@@ -205,7 +212,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
             },
             {
                 $sort: {
-                    nearestSlotTime: 1
+                    createdAt: -1
                 }
             },
             { $skip: parseInt(skip) },

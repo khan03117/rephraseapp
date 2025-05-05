@@ -1,4 +1,3 @@
-const { response } = require("express");
 const Slot = require("../models/Slot");
 const moment = require("moment-timezone");
 const Booking = require("../models/Booking");
@@ -77,6 +76,7 @@ exports.create_slot_by_weekdays = async (req, res) => {
             if (clinic) {
                 de_dat['clinic'] = clinic;
             }
+
             await Slot.deleteMany(de_dat);
             await Slot.insertMany(slotsToSave);
         }
@@ -92,7 +92,85 @@ exports.create_slot_by_weekdays = async (req, res) => {
         return res.status(500).json({ success: 0, data: null, message: "Server error while creating slots." });
     }
 };
+exports.create_single_slot = async (req, res) => {
+    try {
+        const { date, dayname, availability, duration = 30, gap = 10, clinic } = req.body;
+        const doctorId = req.user._id;
+        const finddoctor = await User.findOne({ _id: doctorId, role: "Doctor" });
+        const findClinics = await Clinic.find({ doctor: doctorId });
+        if (!finddoctor) {
+            return res.json({ success: 0, data: null, message: "Only doctor can add slots" });
+        }
+        if (findClinics.length > 0 && !clinic) {
+            return res.json({ success: 0, data: null, message: "Please select clinic" });
+        }
+        if (!duration) {
+            return res.json({ success: 0, data: null, message: "Duration is mandatory." });
+        }
+        if (!gap) {
+            return res.json({ success: 0, data: null, message: "Gap is mandatory." });
+        }
+        if (!dayname) {
+            return res.json({ success: 0, data: null, message: "Dayname is mandatory." });
+        }
+        if (!availability || !Array.isArray(availability) || availability.length === 0) {
+            return res.json({ success: 0, data: null, message: "Availability array is mandatory and should not be empty." });
+        }
+        const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        if (!weekdays.includes(dayname)) {
+            return res.json({ success: 0, data: null, message: "Please enter a correct dayname (e.g., Monday)." });
+        }
+        let slotDate = null;
+        let weekdayName = dayname;
+        if (date) {
+            const parsedDate = new Date(date);
+            if (isNaN(parsedDate)) {
+                return res.json({ success: 0, data: null, message: "Invalid date format." });
+            }
+            weekdayName = weekdays[parsedDate.getDay()];
+            slotDate = moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate();
+        }
+        const slotsToSave = [];
+        for (const range of availability) {
+            let start = moment(range.start_time, "HH:mm");
+            const end = moment(range.end_time, "HH:mm");
+            while (start.clone().add(duration, 'minutes').isSameOrBefore(end)) {
+                const slotStartTime = start.format("HH:mm");
+                const slotEndTime = start.clone().add(duration, 'minutes').format("HH:mm");
+                const newSlot = {
+                    doctor: doctorId,
+                    clinic: clinic || null,
+                    date: slotDate || null, // if provided
+                    weekdayName: weekdayName,
+                    start_time: slotStartTime, // Save as "HH:mm" string
+                    end_time: slotEndTime,
+                    status: "available",
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+                slotsToSave.push(newSlot);
+                start = start.clone().add(duration + gap, 'minutes');
+            }
+        }
+        if (slotsToSave.length > 0) {
+            const de_dat = { doctor: doctorId, weekdayName };
+            if (clinic) {
+                de_dat['clinic'] = clinic;
+            }
+            await Slot.insertMany(slotsToSave);
+        }
+        return res.status(201).json({
+            success: 1,
+            message: "Slot created successfully.",
+            total_slots: slotsToSave.length,
+            data: slotsToSave
+        });
 
+    } catch (error) {
+        console.error("Error in create_slot_by_weekdays:", error);
+        return res.status(500).json({ success: 0, data: null, message: "Server error while creating slots." });
+    }
+}
 
 exports.get_slot = async (req, res) => {
     try {
@@ -136,9 +214,12 @@ exports.get_slot = async (req, res) => {
 
         const slots = await Slot.find(fdata).populate({
             path: 'clinic',
-            select: 'title email mobile profile_image role address'
+            select: 'title email mobile profile_image role address state city pincode'
+        }).populate({
+            path: "doctor",
+            select: "name email mobile profile_image role address state city pincode"
         }).lean().sort({ start_time: 1 });
-        const today = moment().tz('Asia/Kolkata').format('YYYY-MM-DD');
+        const today = date ? moment(date).tz('Asia/Kolkata').format('YYYY-MM-DD') : moment().tz('Asia/Kolkata').format('YYYY-MM-DD');
         const formattedSlots = slots.map(slot => ({
             ...slot,
             start_time: moment.utc(today + " " + slot.start_time).format("YYYY-MM-DD HH:mm"),
