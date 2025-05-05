@@ -344,7 +344,7 @@ exports.deleteSlot = async (req, res) => {
         }
         // return res.json({ findSlot })
         const blockdata = {
-            status: "blocked",
+            status: findSlot.status == "blocked" ? "available" : "blocked",
             block_type: "always"
         }
 
