@@ -96,10 +96,13 @@ exports.create_slot_by_weekdays = async (req, res) => {
 
 exports.get_slot = async (req, res) => {
     try {
-        const { dayname, date, clinic } = req.query;
+        const { dayname, date, clinic, doctor_id } = req.query;
         const fdata = {};
         if (req.user.role == "Doctor") {
             fdata['doctor'] = req.user._id
+        }
+        if (doctor_id) {
+            fdata['doctor'] = doctor_id
         }
         const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         // if (date) {
