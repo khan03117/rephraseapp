@@ -85,7 +85,7 @@ exports.verify_otp = async (req, res) => {
                 const tokenuser = {
                     _id: userExists._id,
                 }
-                token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "30 days" });
+                token = jwt.sign({ user: tokenuser }, SECRET_KEY, { expiresIn: "730d" });
 
                 await User.findOneAndUpdate({ _id: userExists._id }, { $set: { jwt_token: token } });
 
