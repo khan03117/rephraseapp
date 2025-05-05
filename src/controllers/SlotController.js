@@ -116,6 +116,7 @@ exports.create_single_slot = async (req, res) => {
         if (!availability || !Array.isArray(availability) || availability.length === 0) {
             return res.json({ success: 0, data: null, message: "Availability array is mandatory and should not be empty." });
         }
+
         const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         if (!weekdays.includes(dayname)) {
             return res.json({ success: 0, data: null, message: "Please enter a correct dayname (e.g., Monday)." });
@@ -151,6 +152,9 @@ exports.create_single_slot = async (req, res) => {
                 slotsToSave.push(newSlot);
                 start = start.clone().add(duration + gap, 'minutes');
             }
+        }
+        if (slotsToSave.length > 1) {
+            return res.json({ success: 0, message: "Only single slot can be added otherwise you must reset your slot" });
         }
         if (slotsToSave.length > 0) {
             const de_dat = { doctor: doctorId, weekdayName };
