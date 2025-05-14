@@ -6,20 +6,24 @@ exports.create_booking = async (req, res) => {
     const { doctor_id, slot_id, booking_date } = req.body;
 
     const slots = await Slot.findOne({ _id: slot_id, doctor: doctor_id, status: "available" })
-        .sort({ start_time: 1 })
         .lean();
+
+
 
     if (!slots) {
         return res.status(400).json({ success: 0, message: "Slot not available or already booked" });
     }
+    const isBlocked = await Slot.findOne({ slot_id: slot_id, date: moment.tz(booking_date, "Asia/Kolkata").startOf("day").utc().toDate() });
+    if (isBlocked) {
+        return res.json({ success: 0, data: [], message: "This slot is already booked" });
+    }
 
     // Extract the time part from slot and apply it to the booking_date
-    const slotStart = moment(slots.start_time).tz("Asia/Kolkata").format("HH:mm");
-    const slotEnd = moment(slots.end_time).tz("Asia/Kolkata").format("HH:mm");
-
+    const slotStart = moment(`${booking_date} ${slots.start_time}`).tz("Asia/Kolkata").format("HH:mm");
+    const slotEnd = moment(`${booking_date} ${slots.end_time}`).tz("Asia/Kolkata").format("HH:mm");
     const start_at = moment.tz(`${booking_date} ${slotStart}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc().toDate();
     const end_at = moment.tz(`${booking_date} ${slotEnd}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc().toDate();
-
+    // return res.json({ start_at, end_at });
     const bdata = {
         user: userId,
         doctor: doctor_id,
@@ -29,8 +33,25 @@ exports.create_booking = async (req, res) => {
         duration: (end_at.getTime() - start_at.getTime()) / 60000,
         status: "booked"
     };
+    const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const parsedDate = new Date(booking_date);
+    const weekdayname = weekdays[parsedDate.getDay()];
 
+    const blockdata = {
+        weekdayName: weekdayname,
+        status: "blocked",
+        "doctor": doctor_id,
+        "slot_id": slots._id,
+        date: moment.tz(booking_date, "Asia/Kolkata").startOf("day").utc().toDate(),
+        start_time: slots.start_time,
+        end_time: slots.end_time,
+        createdAt: new Date()
+    }
+    // console.log(bdata);
+    // return res.json({ bdata });
+    await Slot.create(blockdata);
     const booking = await Booking.create(bdata);
+
     return res.json({ success: 1, message: "Booking successful", data: booking });
 };
 

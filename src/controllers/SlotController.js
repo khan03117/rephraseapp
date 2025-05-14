@@ -368,6 +368,7 @@ exports.block_slot = async (req, res) => {
         const blockdata = {
             weekdayName: weekdayname,
             status: "blocked",
+            "slot_id": findSlot._id,
             "doctor": finddoctor._id,
             date: moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate(),
             start_time: findSlot.start_time,

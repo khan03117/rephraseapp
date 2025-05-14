@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 const slotSchema = new mongoose.Schema({
     doctor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     date: { type: Date },
+    slot_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Slot",
+        default: null
+    },
     weekdayName: {
         type: String
     },
