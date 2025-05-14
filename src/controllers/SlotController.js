@@ -284,8 +284,6 @@ exports.get_slot = async (req, res) => {
 
 exports.mark_holiday = async (req, res) => {
     try {
-
-
         const doctor_id = req.user._id;
         const findclinic = await User.findOne({ _id: doctor_id, role: "Doctor" });
         if (!findclinic) {
@@ -322,6 +320,31 @@ exports.mark_holiday = async (req, res) => {
         return res.json({ success: 1, message: "holiday added successfully", data: resp });
     } catch (err) {
         return res.json({ success: 1, message: err.message, data: null })
+    }
+}
+exports.unmark_holiday = async (req, res) => {
+    try {
+        const doctor_id = req.user._id;
+        const { holiday_id } = req.body
+        const findclinic = await User.findOne({ _id: doctor_id, role: "Doctor" });
+        if (!findclinic) {
+            return res.json({ success: 0, message: "Only doctor can add slots", data: null })
+        }
+        const holidayfind = { _id: holiday_id };
+
+        if (req.user.role == "Doctor") {
+            holidayfind['doctor'] = req.user._id
+        }
+
+        const isholiday = await Slot.findOne({ ...holidayfind, isHoliday: true });
+        if (!isholiday) {
+            return res.json({ success: 0, message: "Invalid holiday id" });
+        }
+        await Slot.deleteOne({ _id: isholiday._id });
+        return res.json({ success: 1, message: "Holiday cancelled successully", data: [] });
+
+    } catch (err) {
+        return res.json({ success: 0, message: err.message })
     }
 }
 exports.block_slot = async (req, res) => {
