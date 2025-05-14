@@ -107,12 +107,9 @@ exports.get_booking = async (req, res) => {
     bookings = bookings.map(booking => ({
         ...booking,
         booking_date: moment.utc(booking.booking_date).tz("Asia/Kolkata").format("YYYY-MM-DD"),
-        slots: booking.slots.map(slot => ({
-            ...slot,
-            start_time: moment.utc(slot.start_time).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss"),
-            end_time: moment.utc(slot.end_time).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss"),
-            date: moment.utc(slot.date).tz("Asia/Kolkata").format("YYYY-MM-DD")
-        }))
+        start_at: moment.utc(booking.start_at).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss"),
+        end_at: moment.utc(booking.end_at).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss"),
+
     }));
     const pagination = { perPage, page, totalPages, totalDocs };
     return res.json({ success: 1, message: "List of bookings", data: bookings, pagination, fdata });
