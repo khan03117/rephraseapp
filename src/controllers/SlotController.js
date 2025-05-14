@@ -179,7 +179,9 @@ exports.create_single_slot = async (req, res) => {
 exports.get_slot = async (req, res) => {
     try {
         const { dayname, date = new Date(), clinic, doctor_id } = req.query;
-        const fdata = {};
+        const fdata = {
+            status: { $ne: "blocked" }
+        };
         if (req.user.role == "Doctor") {
             fdata['doctor'] = req.user._id
         }
@@ -217,9 +219,10 @@ exports.get_slot = async (req, res) => {
         }
 
         const isholiday = await Slot.findOne({ ...holidayfind, isHoliday: true });
-        // if (isholiday) {
-        //     return res.json({ isholiday, data: [], success: 0, message: "Given date is marked as holiday" })
-        // }
+        //return res.json({ success: 1, isholiday })
+        if (isholiday) {
+            return res.json({ isholiday, data: [], success: 0, message: "Given date is marked as holiday" })
+        }
 
 
         // if (blockedSlots.length > 0) {
@@ -241,25 +244,32 @@ exports.get_slot = async (req, res) => {
         const formattedSlots = slots.map(slot => {
             const startTime = moment.utc(today + " " + slot.start_time).format("YYYY-MM-DD HH:mm");
             const endTime = moment.utc(today + " " + slot.end_time).format("YYYY-MM-DD HH:mm");
+
             if (isholiday) {
-                return {
+                const robj = {
                     ...slot,
                     start_time: startTime,
                     end_time: endTime,
                     status: "blocked"
                 };
+                return robj
+            } else {
+                const slotKey = `${slot.start_time}|${slot.end_time}`;
+                let status = slot.status;
+                if (blockedTimePairs.has(slotKey)) {
+                    status = "blocked";
+                }
+                if (!isholiday) {
+                    return {
+                        ...slot,
+                        start_time: startTime,
+                        end_time: endTime,
+                        status: status
+                    };
+                }
+
             }
-            const slotKey = `${slot.start_time}|${slot.end_time}`;
-            let status = slot.status;
-            if (blockedTimePairs.has(slotKey)) {
-                status = "blocked";
-            }
-            return {
-                ...slot,
-                start_time: startTime,
-                end_time: endTime,
-                status: status
-            };
+
         });
         return res.json({
             success: 1,
