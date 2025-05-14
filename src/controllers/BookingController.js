@@ -56,6 +56,7 @@ exports.create_booking = async (req, res) => {
 };
 
 exports.get_booking = async (req, res) => {
+    //await Booking.deleteMany({});
     const userId = req.user._id;
     const role = req.user.role;
     const { date, page = 1, perPage = 10, status, event_timing } = req.query;
@@ -101,7 +102,7 @@ exports.get_booking = async (req, res) => {
     }).populate({
         path: 'slots',
         select: 'date start_time end_time status'
-    }).sort({ booking_date: -1 }).skip(skip).limit(perPage).lean();
+    }).sort({ createdAt: -1 }).skip(skip).limit(perPage).lean();
 
     bookings = bookings.map(booking => ({
         ...booking,
