@@ -221,7 +221,7 @@ exports.get_slot = async (req, res) => {
         const isholiday = await Slot.findOne({ ...holidayfind, isHoliday: true });
         //return res.json({ success: 1, isholiday })
         if (isholiday) {
-            return res.json({ isholiday, data: [], success: 0, message: "Given date is marked as holiday" })
+            return res.json({ isholiday, data: [], success: 1, message: "Given date is marked as holiday" })
         }
 
 
