@@ -31,11 +31,12 @@ const bookingSchema = new Schema({
         enum: ['Online', 'Offline'],
         default: "Online"
     },
-    slots: [{
+
+    booked_slot: {
         type: Schema.Types.ObjectId,
         ref: "Slot",
         default: null
-    }],
+    },
 
     status: {
         type: String
