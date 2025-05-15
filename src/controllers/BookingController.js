@@ -101,9 +101,6 @@ exports.get_booking = async (req, res) => {
     }).populate({
         path: "user",
         select: 'custom_request_id name mobile gender dob address role profile_image'
-    }).populate({
-        path: 'slots',
-        select: 'date start_time end_time status'
     }).sort({ createdAt: -1 }).skip(skip).limit(perPage).lean();
 
     bookings = bookings.map(booking => ({
