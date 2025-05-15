@@ -78,7 +78,7 @@ exports.update_perscription = async (req, res) => {
 }
 exports.get_perscription = async (req, res) => {
     try {
-        const { user, doctor } = req.query;
+        const { user, doctor, type } = req.query;
         const userId = req.user._id;
         const role = req.user.role;
         const fdata = {};
@@ -94,6 +94,9 @@ exports.get_perscription = async (req, res) => {
         if (doctor) {
             fdata['doctor'] = doctor;
         }
+        if (type) {
+            fdata['type'] = type
+        }
         const resp = await Prescription.find(fdata).populate({
             path: 'doctor',
             select: 'custom_request_id name mobile gender dob address role profile_image'
@@ -102,6 +105,31 @@ exports.get_perscription = async (req, res) => {
             select: 'custom_request_id name mobile gender dob address role profile_image'
         })
         return res.json({ success: 1, message: "List of prescriptions", data: resp });
+    } catch (err) {
+        return res.json({ success: 0, message: err.message })
+    }
+}
+exports.upload_old_perscription = async (req, res) => {
+    try {
+        const data = { ...req.body, type: "old" };
+
+        if (req.file) {
+            data['file'] = req.file.path
+            const uploadedpers = await Prescription.create(data);
+            return res.json({
+                errors: [],
+                success: 1,
+                message: "Prescription uploaded successfully",
+                data: uploadedpers
+            });
+        } else {
+            return res.json({
+                errors: [{ path: 'image', msg: 'Image is required' }],
+                success: 0,
+                message: "Image is required",
+                data: []
+            });
+        }
     } catch (err) {
         return res.json({ success: 0, message: err.message })
     }

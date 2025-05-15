@@ -7,7 +7,8 @@ const schema = new Schema({
     },
     category: {
         type: Schema.Types.ObjectId,
-        ref: "PrescriptionCategory"
+        ref: "PrescriptionCategory",
+        default: null
     },
     text: {
         type: String
@@ -16,6 +17,12 @@ const schema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "User"
     },
+    file: {
+        type: String
+    },
+    type: {
+        type: String
+    }
 
 }, { timestamps: true });
 module.exports = new model('Prescription', schema);

@@ -87,8 +87,9 @@ exports.get_booking = async (req, res) => {
         }
     }
     if (status) {
-        fdata['status'] = status;
+        fdata['status'] = { $regex: status, $options: "i" };
     }
+
     if (date) {
         fdata["booking_date"] = moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate();
     }
