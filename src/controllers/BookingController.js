@@ -25,6 +25,7 @@ exports.create_booking = async (req, res) => {
     const end_at = moment.tz(`${booking_date} ${slotEnd}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc().toDate();
     // return res.json({ start_at, end_at });
     const bdata = {
+        mode: req.body.mode ?? "Online",
         user: userId,
         doctor: doctor_id,
         booking_date: moment.tz(booking_date, "Asia/Kolkata").startOf("day").utc().toDate(),
@@ -57,7 +58,7 @@ exports.create_booking = async (req, res) => {
 };
 
 exports.get_booking = async (req, res) => {
-    //await Booking.deleteMany({});
+    // await Booking.deleteMany({});
     const userId = req.user._id;
     const role = req.user.role;
     const { date, page = 1, perPage = 10, status, event_timing } = req.query;
