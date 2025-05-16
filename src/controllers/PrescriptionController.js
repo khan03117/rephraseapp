@@ -124,7 +124,7 @@ exports.upload_old_perscription = async (req, res) => {
         if (!bookingdata) {
             return res.status(403).json({ success: 0, message: "Booking not found", data: null })
         }
-        const data = { ...req.body, type: "old" };
+        const data = { ...req.body, type: "old", doctor: bookingdata.doctor };
 
         if (req.file) {
             data['file'] = req.file.path
