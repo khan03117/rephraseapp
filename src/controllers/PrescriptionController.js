@@ -108,7 +108,7 @@ exports.get_perscription = async (req, res) => {
             path: "user",
             select: 'custom_request_id name mobile gender dob address role profile_image'
         })
-        return res.json({ success: 1, message: "List of prescriptions", data: resp });
+        return res.json({ success: 1, message: "List of prescriptions", data: resp, fdata });
     } catch (err) {
         return res.json({ success: 0, message: err.message })
     }
@@ -127,7 +127,7 @@ exports.upload_old_perscription = async (req, res) => {
         if (!bookingdata) {
             return res.status(403).json({ success: 0, message: "Booking not found", data: null })
         }
-        const data = { ...req.body, type: "old", doctor: bookingdata.doctor };
+        const data = { ...req.body, user: req.user._id, type: "old", doctor: bookingdata.doctor };
 
         if (req.file) {
             data['file'] = req.file.path
