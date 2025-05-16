@@ -4,12 +4,8 @@ const moment = require("moment-timezone");
 exports.create_booking = async (req, res) => {
     const userId = req.user._id;
     const { doctor_id, slot_id, booking_date } = req.body;
-
     const slots = await Slot.findOne({ _id: slot_id, doctor: doctor_id, status: "available" })
         .lean();
-
-
-
     if (!slots) {
         return res.status(400).json({ success: 0, message: "Slot not available or already booked" });
     }

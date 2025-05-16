@@ -11,7 +11,6 @@ const makeSlug = (title) => {
 }
 
 exports.create_video = async (req, res) => {
-    console.log(req.files)
     const { title } = req.body;
     const url = makeSlug(title);
     const data = { ...req.body };
@@ -27,8 +26,7 @@ exports.create_video = async (req, res) => {
         data['source'] = "local"
     }
     const resp = await Video.create(data);
-    return res.json({ success: 1, message: "Data uploaded successfully", data: resp })
-
+    return res.json({ success: 1, message: "Data uploaded successfully", data: resp });
 }
 exports.get_video = async (req, res) => {
     const { page_name } = req.params;

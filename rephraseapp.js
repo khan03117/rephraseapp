@@ -1,18 +1,15 @@
 const express = require('express')
-const app = express();
+const { server, app } = require('./socket');
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger-output.json");
 const mongoose = require('mongoose');
 const path = require('path');
-const https = require('https');
+
 const fs = require('fs');
 const cors = require('cors');
 require('dotenv').config();
-const options = {
-    key: fs.readFileSync('./ssl/private.pem'),
-    cert: fs.readFileSync('./ssl/certificate.pem'),
-};
-const server = https.createServer(options, app);
+
+
 process.env.TZ = "Asia/Kolkata";
 const mongourl = "mongodb+srv://noreplycabs24:KkhHGcKLcnzppeLk@cluster0.at7dp.mongodb.net/refreshapp";
 mongoose.connect(mongourl);
@@ -44,6 +41,7 @@ const slotroutes = require('./src/routes/SlotRoutes');
 const bookingRoutes = require('./src/routes/BookingRoutes');
 const faqroutes = require('./src/routes/FaqRoutes');
 const agoraRoutes = require('./src/routes/AgoraRoutes');
+
 
 app.use('/api/v1/user', userroutes);
 app.use('/api/v1/doctor', doctorroutes);
