@@ -1,3 +1,4 @@
+const Booking = require("../models/Booking");
 const Prescription = require("../models/Prescription");
 const PrescriptionCategory = require("../models/PrescriptionCategory");
 const User = require("../models/User");
@@ -111,6 +112,18 @@ exports.get_perscription = async (req, res) => {
 }
 exports.upload_old_perscription = async (req, res) => {
     try {
+        const { booking } = req.body;
+        if (!booking) {
+            return res.status(403).json({ success: 0, message: "Booking ID not found", data: null })
+        }
+        const findbooking = { _id: booking };
+        if (req.user.role == "User") {
+            findbooking['user'] = req.user._id;
+        }
+        const bookingdata = await Booking.findOne(findbooking);
+        if (!bookingdata) {
+            return res.status(403).json({ success: 0, message: "Booking not found", data: null })
+        }
         const data = { ...req.body, type: "old" };
 
         if (req.file) {

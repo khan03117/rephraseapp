@@ -15,7 +15,13 @@ const schema = new Schema({
     },
     doctor: {
         type: Schema.Types.ObjectId,
-        ref: "User"
+        ref: "User",
+        default: null
+    },
+    booking: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null
     },
     file: {
         type: String
@@ -23,6 +29,5 @@ const schema = new Schema({
     type: {
         type: String
     }
-
 }, { timestamps: true });
 module.exports = new model('Prescription', schema);
