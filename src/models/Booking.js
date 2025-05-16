@@ -31,7 +31,9 @@ const bookingSchema = new Schema({
         enum: ['Online', 'Offline'],
         default: "Online"
     },
-
+    consultation_charge: {
+        type: Number
+    },
     booked_slot: {
         type: Schema.Types.ObjectId,
         ref: "Slot",

@@ -7,6 +7,6 @@ router.post('/specility/:doctor_id', Auth, handle_specility);
 router.get('/specility/:doctor_id', Auth, get_specility);
 router.get('/', Auth, getDoctorWithSpecialization);
 router.get('/clinics', Auth, clinics);
-router.get('/create-booking', Auth, add_patient);
+router.post('/create-booking', Auth, add_patient);
 
 module.exports = router;
