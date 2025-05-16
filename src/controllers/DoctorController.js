@@ -239,13 +239,13 @@ exports.clinics = async (req, res) => {
 }
 exports.add_patient = async (req, res) => {
     try {
-        const { name, email, mobile, age, gender, marital_status, state, city, pincode, slot_id, booking_date } = req.body;
+        const { name, email, mobile, address, age, gender, marital_status, state, city, pincode, slot_id, booking_date } = req.body;
         const isMobileRegistered = await User.findOne({ mobile });
         let user_id;
         if (isMobileRegistered) {
             user_id = isMobileRegistered._id;
         } else {
-            const newuser = await User.create({ name, email, mobile, age, gender, marital_status, state, city, pincode });
+            const newuser = await User.create({ name, address, email, mobile, age, gender, marital_status, state, city, pincode });
             user_id = newuser._id;
         }
         const request_by = req.user._id;
