@@ -15,7 +15,7 @@ exports.getAgoraToken = async (booking_id, uid, role) => {
             APP_ID,
             APP_CERTIFICATE,
             channelName,
-            uid,
+            0,
             rtcRole,
             privilegeExpiredTs
         );
