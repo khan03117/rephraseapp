@@ -411,11 +411,9 @@ exports.my_profile = async (req, res) => {
 }
 exports.update_fcm_token = async (req, res) => {
     try {
-
         const { token } = req.body;
         const updatedata = await User.findOneAndUpdate({ _id: req.user._id }, { $set: { fcm_token: token } }, { new: true });
-        return res.json({ success: 1, message: updatedata })
-
+        return res.json({ success: 1, message: updatedata });
     } catch (err) {
         return res.status(500).json({ success: 0, message: err.message });
     }

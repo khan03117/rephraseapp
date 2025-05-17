@@ -54,7 +54,7 @@ app.use('/api/v1/prescription', prescription);
 app.use('/api/v1/booking', bookingRoutes);
 app.use('/api/v1/slot', slotroutes);
 app.use('/api/v1/faq', faqroutes);
-app.use('/api/v1/agora', agoraRoutes);
+app.use('/api/v1/call', agoraRoutes);
 app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.get('/', (req, res) => res.send('Rephrase App Started'))

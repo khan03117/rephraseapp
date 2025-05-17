@@ -7,7 +7,7 @@ const APP_CERTIFICATE = "8c65f495efbe4096918873f245541ffc";
 
 exports.start_meet = async (req, res) => {
     const { booking_id, call_type } = req.body;
-    if (!request_id) {
+    if (!booking_id) {
         return res.status(403).json({ success: 0, message: "Booking id is invalid" });
     }
     const fdata = {

@@ -22,7 +22,7 @@ exports.getAgoraToken = async (booking_id, uid, role) => {
 
         return data;
     } catch (err) {
-        return res.json({ success: 0, message: err.message })
+        console.log({ message: err.message })
     }
 
 }
