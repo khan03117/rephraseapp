@@ -47,6 +47,9 @@ const bookingSchema = new Schema({
         type: String,
         enum: ['Pending', 'Completed'],
         default: "Pending"
+    },
+    agora_token: {
+        type: String
     }
 
 }, { timestamps: true });

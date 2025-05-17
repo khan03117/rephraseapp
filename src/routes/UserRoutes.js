@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { verify_otp, update_profile, user_list, send_otp, store_profile, admin_login, my_profile } = require("../controllers/UserController");
+const { verify_otp, update_profile, user_list, send_otp, store_profile, admin_login, my_profile, update_fcm_token } = require("../controllers/UserController");
 const store = require("../middleware/Upload");
 const { Auth } = require("../middleware/Auth");
 
@@ -49,6 +49,7 @@ router.post('/register', Auth, store.fields([
 router.get('/all', user_list);
 router.post('/auth', admin_login);
 router.get('/', Auth, my_profile);
+router.post('/update-fcm-token', Auth, update_fcm_token);
 
 
 
