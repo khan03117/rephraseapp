@@ -15,7 +15,7 @@ exports.getAgoraToken = async (booking_id, uid, role) => {
         const currentTimestamp = Math.floor(Date.now() / 1000);
         const privilegeExpiredTs = currentTimestamp + MAX_EXPIRATION;
 
-        const rtcRole = role === 'Doctor' ? RtcRole.PUBLISHER : RtcRole.SUBSCRIBER;
+        const rtcRole = role == 'Doctor' ? RtcRole.PUBLISHER : RtcRole.SUBSCRIBER;
         const channelName = `appointment_${booking_id}`;
 
         const token = RtcTokenBuilder.buildTokenWithAccount(
