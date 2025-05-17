@@ -22,7 +22,6 @@ exports.start_meet = async (req, res) => {
         const uid = req.user._id.toString()
         const urole = req.user.role;
         agora_token = await getAgoraToken(booking_id, uid, urole);
-        console.log(agora_token)
         await Booking.findOneAndUpdate({ _id: bookng._id }, { agora_token: agora_token });
     }
 
@@ -50,4 +49,13 @@ exports.start_meet = async (req, res) => {
     }
     return res.status(200).json({ success: 1, message: "call started", data: bookng, agora_token, APP_CERTIFICATE, APP_ID });
 
+}
+exports.end_meet = async (req, res) => {
+    try {
+        const { booking_id } = req.body;
+        const resp = await Booking.findOneAndUpdate({ _id: booking_id }, { $set: { status: "Completed", call_status: "Ended" } }, { new: true });
+        return res.json({ success: 1, message: "Call ended successfully", data: resp });
+    } catch (err) {
+        return res.json({ success: 0, message: err.message })
+    }
 }
