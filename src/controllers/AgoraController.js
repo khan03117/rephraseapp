@@ -17,7 +17,7 @@ exports.start_meet = async (req, res) => {
     if (!bookng) {
         return res.json({ success: 0, message: "Invalid booking request id" });
     }
-    let agora_token = bookng?.agora_token;
+    let agora_token;
     const agoraTokenGeneratedAt = bookng?.agora_token_generated_at;
     const currentTime = new Date();
     const bookingDuration = bookng.duration * 60 * 1000;
@@ -30,6 +30,8 @@ exports.start_meet = async (req, res) => {
         const urole = req.user.role;
         agora_token = await getAgoraToken(booking_id, uid, urole);
         await Booking.findOneAndUpdate({ _id: bookng._id }, { agora_token: agora_token });
+    } else {
+        agora_token = bookng.agora_token
     }
 
     const bodymessage = req.user.role == "User" ? `Your consultation with ${bookng.doctor.name} has started. Join now to begin your session.` : ` "Consultant ${bookng.user.name} has joined the session. Join now to begin.",`
