@@ -11,6 +11,9 @@ const schema = new Schema({
         default: null
     },
     text: {
+        type: Schema.Types.Mixed,
+    },
+    text_type: {
         type: String
     },
     doctor: {

@@ -40,22 +40,31 @@ exports.delete_category = async (req, res) => {
     return res.json({ success: 1, message: "PrescriptionCategory deleted successfull", data: resp });
 }
 exports.get_category = async (req, res) => {
-    const resp = await PrescriptionCategory.find();
+    const { id, title } = req.query;
+    const fdata = {};
+    if (id) fdata['_id'] = id;
+    if (title) fdata['title'] = title;
+    const resp = await PrescriptionCategory.find(fdata).sort({ order: 1 })
     return res.json({ success: 1, message: "List of Category", data: resp });
 }
 exports.write_perscription = async (req, res) => {
-    const { category, text, user } = req.body;
-    const checkCategory = await PrescriptionCategory.findOne({ _id: category });
-    if (!checkCategory) {
-        return res.json({ success: 0, message: "Invalid cateogry" });
+    try {
+        const { category, text, user } = req.body;
+        const checkCategory = await PrescriptionCategory.findOne({ _id: category });
+        if (!checkCategory) {
+            return res.json({ success: 0, message: "Invalid cateogry" });
+        }
+        const findUser = await User.findOne({ _id: user });
+        if (!findUser) {
+            return res.json({ success: 0, message: "patient not found" });
+        }
+        const data = { category, user, text, doctor: req.user._id, text_type: typeof text };
+        const resp = await Prescription.create(data);
+        return res.json({ success: 1, message: "Prescription created successfully", data: resp })
+    } catch (err) {
+        return res.json({ success: 0, message: err.message })
     }
-    const findUser = await User.findOne({ _id: user });
-    if (!findUser) {
-        return res.json({ success: 0, message: "patient not found" });
-    }
-    const data = { category, user, text, doctor: req.user._id };
-    const resp = await Prescription.create(data);
-    return res.json({ success: 1, message: "Prescription created successfully", data: resp })
+
 }
 exports.delete_perscription = async (req, res) => {
     const { id } = req.params;
