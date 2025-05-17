@@ -17,18 +17,23 @@ exports.start_meet = async (req, res) => {
     if (!bookng) {
         return res.json({ success: 0, message: "Invalid booking request id" });
     }
+    let agora_token = bookng?.agora_token;
+    const agoraTokenGeneratedAt = bookng?.agora_token_generated_at;
+    const currentTime = new Date();
+    const bookingDuration = bookng.duration * 60 * 1000;
 
-
-    const uid = req.user._id.toString()
-    const urole = req.user.role;
-    const agora_token = await getAgoraToken(booking_id, uid, urole);
-    await Booking.findOneAndUpdate({ _id: bookng._id }, { agora_token: agora_token });
-
+    const shouldRegenerateToken =
+        !agoraTokenGeneratedAt ||
+        (currentTime - new Date(agoraTokenGeneratedAt)) > bookingDuration;
+    if (shouldRegenerateToken) {
+        const uid = req.user._id.toString()
+        const urole = req.user.role;
+        agora_token = await getAgoraToken(booking_id, uid, urole);
+        await Booking.findOneAndUpdate({ _id: bookng._id }, { agora_token: agora_token });
+    }
 
     const bodymessage = req.user.role == "User" ? `Your consultation with ${bookng.doctor.name} has started. Join now to begin your session.` : ` "Consultant ${bookng.user.name} has joined the session. Join now to begin.",`
     if (bookng.doctor.fcm_token && bookng.user.fcm_token) {
-
-
         const not_obj = {
             ftoken: req.user.role == "User" ? bookng.doctor.fcm_token : bookng.user.fcm_token,
             title: "Greetings from consulto",

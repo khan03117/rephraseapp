@@ -51,6 +51,9 @@ const bookingSchema = new Schema({
     agora_token: {
         type: Schema.Types.Mixed
     },
+    agora_token_generated_at: {
+        type: Date
+    },
     call_status: {
         type: String
     }
