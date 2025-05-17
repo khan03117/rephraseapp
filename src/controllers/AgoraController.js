@@ -29,7 +29,7 @@ exports.start_meet = async (req, res) => {
         const uid = req.user._id.toString()
         const urole = req.user.role;
         agora_token = await getAgoraToken(booking_id, uid, urole);
-        await Booking.findOneAndUpdate({ _id: bookng._id }, { agora_token: agora_token }, { new: true });
+        await Booking.findOneAndUpdate({ _id: bookng._id }, { agora_token: agora_token, agora_token_generated_at: new Date() }, { new: true });
     }
     const updated_bookng = await Booking.findOne(fdata).populate('doctor', "name email mobile profile_image fcm_token").populate('user', "name email mobile profile_image fcm_token");
 
