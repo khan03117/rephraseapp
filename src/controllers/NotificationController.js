@@ -21,7 +21,7 @@ exports.send_one_to_one_notification = async (ftoken, title, body, sound = "defa
                 },
             },
             data: data,
-            token: registrationToken,
+            token: ftoken,
         };
         firebaseAdmin.messaging()
             .send(message)
@@ -35,7 +35,7 @@ exports.send_one_to_one_notification = async (ftoken, title, body, sound = "defa
         console.log({ err: err.message })
     }
 }
-exports.send_one_to_many_notification = async (registrationTokens, title, body, sound = "default", channelId = "Consulto", data = null) => {
+exports.send_one_to_many_notification = async (ftoken, title, body, sound = "default", channelId = "Consulto", data = null) => {
 
     const message = {
         notification: {

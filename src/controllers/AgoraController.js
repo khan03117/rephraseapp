@@ -19,55 +19,35 @@ exports.start_meet = async (req, res) => {
     }
     let agora_token = bookng?.agora_token;
     if (!bookng?.agora_token) {
-        agora_token = await getAgoraToken({ booking_id, uid: req.user._id, role: req.user.role });
+        const uid = req.user._id.toString()
+        const urole = req.user.role;
+        agora_token = await getAgoraToken(booking_id, uid, urole);
+        console.log(agora_token)
         await Booking.findOneAndUpdate({ _id: bookng._id }, { agora_token: agora_token });
     }
-    // await send_one_to_one_notification(
-    //     data?.user?.fcm_token,
-    //     "Greetings from consulto",
-    //     "Your consultation with " + data.doctor.name + " has started. Join now to begin your session.",
-    //     "callringtone",
-    //     "CONSULTOCALL",
-    //     {
-    //         // "reservation_id" : request_id , 
-    //         // "doctor" : data.doctor._id.toString(),
-    //         // "user" : data.user._id.toString()
-    //         "user_image": data?.user?.image?.file ? data?.user?.image?.file : "",
-    //         "doctor_image": data?.doctor?.image?.file ? data?.doctor?.image?.file : "",
-    //         "doctor_id": data.doctor._id.toString(),
-    //         "doctor_name": data?.doctor?.name,
-    //         "user_id": data.user._id.toString(),
-    //         "user_name": data?.user?.name,
-    //         "meet_token": token,
-    //         "request_id": request_id.toString(),
-    //         "specialization": data?.specialization?.name,
-    //         "type": data?.type,
-    //         "click_action": "FLUTTER_NOTIFICATION_CLICK",
-    //         "sound": "ringtone",
-    //         "slot": data?.slot?.name,
-    //         "channelId": "Incoming Call",
-    //         "action1": "ACCEPT",
-    //         "action2": "DECLINE",
-    //         "call_type": call_type
 
-    //     }
-    // )
     const bodymessage = req.user.role == "User" ? `Your consultation with ${bookng.doctor.name} has started. Join now to begin your session.` : ` "Consultant ${bookng.user.name} has joined the session. Join now to begin.",`
-    const not_obj = {
-        title: "Greetings from consulto",
-        body: bodymessage,
-        sound: "callringtone",
-        channelId: "AGORACALL",
-        data: {
-            booking: bookng,
-            agora_token: agora_token,
-            "channelId": "Incoming Call",
-            "action1": "ACCEPT",
-            "action2": "DECLINE",
-            "call_type": call_type
+    if (bookng.doctor.fcm_token && bookng.user.fcm_token) {
+
+
+        const not_obj = {
+            ftoken: req.user.role == "User" ? bookng.doctor.fcm_token : bookng.user.fcm_token,
+            title: "Greetings from consulto",
+            body: bodymessage,
+            sound: "callringtone",
+            channelId: "AGORACALL",
+            data: {
+                booking: bookng,
+                agora_token: agora_token,
+                "channelId": "Incoming Call",
+                "action1": "ACCEPT",
+                "action2": "DECLINE",
+                "call_type": call_type
+            }
         }
+
+        await send_one_to_one_notification(not_obj);
     }
-    await send_one_to_one_notification(not_obj);
-    return res.status(200).json({ success: 1, message: "call started", data: bookng, agora_token });
+    return res.status(200).json({ success: 1, message: "call started", data: bookng, agora_token, APP_CERTIFICATE, APP_ID });
 
 }

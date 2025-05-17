@@ -49,7 +49,7 @@ const bookingSchema = new Schema({
         default: "Pending"
     },
     agora_token: {
-        type: String
+        type: Schema.Types.Mixed
     }
 
 }, { timestamps: true });

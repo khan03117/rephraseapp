@@ -4,6 +4,7 @@ const APP_ID = "379eda36f4594f8497be07fa4eba6a0c";
 const APP_CERTIFICATE = "8c65f495efbe4096918873f245541ffc";
 exports.getAgoraToken = async (booking_id, uid, role) => {
     try {
+        console.log({ "booking_id": booking_id });
         const channelName = `appointment_${booking_id}`;
         const booking = await Booking.findOne({ _id: booking_id });
         const duration = booking.duration * 60;
@@ -18,6 +19,7 @@ exports.getAgoraToken = async (booking_id, uid, role) => {
             rtcRole,
             privilegeExpiredTs
         );
+
         const data = { token, uid, channelName, appId: APP_ID };
 
         return data;
