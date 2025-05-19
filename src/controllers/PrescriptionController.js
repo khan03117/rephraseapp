@@ -58,7 +58,7 @@ exports.write_perscription = async (req, res) => {
         if (!findBooking) {
             return res.json({ success: 0, message: "patient not found" });
         }
-        const data = { category, user: findBooking.user, text, doctor: req.user._id, text_type: typeof text };
+        const data = { category, booking, user: findBooking.user, text, doctor: req.user._id, text_type: typeof text };
         const resp = await Prescription.create(data);
         return res.json({ success: 1, message: "Prescription created successfully", data: resp })
     } catch (err) {
