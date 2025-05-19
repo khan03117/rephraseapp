@@ -8,8 +8,6 @@ exports.getAgoraToken = async (booking_id, uid, role) => {
         if (!booking_id || !uid || !role) {
             return res.status(400).json({ error: 'Missing parameters' });
         }
-
-
         const MAX_EXPIRATION = 1 * 60 * 60;
         const currentTimestamp = Math.floor(Date.now() / 1000);
         const privilegeExpiredTs = currentTimestamp + MAX_EXPIRATION;

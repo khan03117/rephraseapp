@@ -88,10 +88,13 @@ exports.update_perscription = async (req, res) => {
 }
 exports.get_perscription = async (req, res) => {
     try {
-        const { user, doctor, type, booking_id } = req.query;
+        const { user, doctor, type, booking_id, category } = req.query;
         const userId = req.user._id;
         const role = req.user.role;
         const fdata = {};
+        if (category) {
+            fdata['category'] = category
+        }
         if (role == "User") {
             fdata['user'] = userId
         }

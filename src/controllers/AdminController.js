@@ -5,7 +5,7 @@ exports.dashboard = async (req, res) => {
     try {
         const totalDoctors = await User.countDocuments({ role: "Doctor" });
         const totalUsers = await User.countDocuments({ role: "User" });
-        const totalBookings = await Booking.countDocuments({ status: "Pending" });
+        const totalBookings = await Booking.countDocuments({});
         const data = {
             totalDoctors, totalUsers, totalBookings
         }
