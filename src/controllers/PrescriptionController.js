@@ -49,6 +49,7 @@ exports.get_category = async (req, res) => {
 }
 exports.write_perscription = async (req, res) => {
     try {
+
         const { category, text, booking } = req.body;
         const checkCategory = await PrescriptionCategory.findOne({ _id: category });
         if (!checkCategory) {
