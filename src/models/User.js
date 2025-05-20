@@ -81,6 +81,9 @@ const schema = new Schema({
     mci_number: {
         type: String
     },
+    consultation_charge: {
+        type: String
+    },
     coordinates: {
         type: { type: String, default: "Point" },
         coordinates: {
@@ -145,6 +148,10 @@ const schema = new Schema({
     },
     jwt_token: {
         type: String
+    },
+    is_active: {
+        type: Boolean,
+        default: false
     }
 
 }, { timestamps: true });

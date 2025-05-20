@@ -41,7 +41,8 @@ exports.getDoctorWithSpecialization = async (req, res) => {
         const modeArr = Array.isArray(mode) ? mode : mode.split(',').filter(Boolean);
 
         const fdata = {
-            "role": "Doctor"
+            "role": "Doctor",
+            "is_active": true
         }
         if (languagesArr.length) {
             fdata['languages'] = { $in: languagesArr };
@@ -141,6 +142,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     email: 1,
                     mobile: 1,
                     gender: 1,
+                    consultation_charge: 1,
                     dob: 1,
                     profession: 1,
                     marital_status: 1,
@@ -157,33 +159,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     state: 1,
                     city: 1,
                     pincode: 1,
-                    slots: {
-                        $map: {
-                            input: "$slots",
-                            as: "slot",
-                            in: {
-                                _id: "$$slot._id",
-                                doctor: "$$slot.doctor",
-                                status: "$$slot.status",
-                                // Include other fields if needed...
-
-                                start_time: {
-                                    $dateToString: {
-                                        format: "%Y-%m-%d %H:%M:%S",
-                                        date: "$$slot.start_time",
-                                        timezone: "Asia/Kolkata"
-                                    }
-                                },
-                                end_time: {
-                                    $dateToString: {
-                                        format: "%Y-%m-%d %H:%M:%S",
-                                        date: "$$slot.end_time",
-                                        timezone: "Asia/Kolkata"
-                                    }
-                                }
-                            }
-                        }
-                    },
+                    is_active: 1,
                     registration_certificate: 1,
                     graduation_certificate: 1,
                     post_graduation_certificate: 1,
@@ -198,17 +174,6 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     updatedAt: 1,
                     specializationDetails: { title: 1, _id: 1 },
                     clinics: 1
-                }
-            },
-            {
-                $addFields: {
-                    nearestSlotTime: {
-                        $cond: [
-                            { $gt: [{ $size: "$slots" }, 0] },
-                            { $min: "$slots.start_time" },
-                            null
-                        ]
-                    }
                 }
             },
             {
@@ -302,5 +267,18 @@ exports.add_patient = async (req, res) => {
 
     } catch (err) {
         return res.json({ success: 0, message: err.message });
+    }
+}
+exports.handleActive = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { action_type, ...request_obj } = req.body;
+        if (!action_type) {
+            return res.status(400).json({ success: 0, message: 'action_type is required' });
+        }
+        const updatedUser = await User.findByIdAndUpdate(id, { $set: request_obj }, { new: true });
+        return res.json({ success: 1, data: updatedUser, message: "Updated successfully" });
+    } catch (err) {
+        return res.json({ success: 0, message: err.message })
     }
 }

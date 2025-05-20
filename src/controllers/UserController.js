@@ -236,7 +236,7 @@ exports.user_list = async (req, res) => {
                 { mobile: { $regex: keyword, $options: "i" } },
             ];
         }
-        const resp = await User.find(fdata).sort({ created_at: -1 }).skip(skip).limit(perPage);
+        const resp = await User.find(fdata).sort({ createdAt: -1 }).skip(skip).limit(perPage);
 
         const totaldocs = await User.countDocuments(fdata);
         const totalPage = Math.ceil(totaldocs / perPage); // Calculate total pages

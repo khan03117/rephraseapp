@@ -58,8 +58,21 @@ exports.write_perscription = async (req, res) => {
         if (!findBooking) {
             return res.json({ success: 0, message: "patient not found" });
         }
-        const data = { category, booking, user: findBooking.user, text, doctor: req.user._id, text_type: typeof text };
-        const resp = await Prescription.create(data);
+
+        const data = { category, booking, user: findBooking.user, text: [text], doctor: req.user._id, text_type: "array" };
+        const isExist = await Prescription.findOne({ category, booking });
+        let resp;
+        if (isExist) {
+            const ndata = {
+                text: [...isExist.text, text],
+                text_type: "array"
+            }
+            resp = await Prescription.findOneAndUpdate({ _id: isExist._id }, { $set: ndata }, { new: true });
+        } else {
+            resp = await Prescription.create(data);
+        }
+
+
         return res.json({ success: 1, message: "Prescription created successfully", data: resp })
     } catch (err) {
         return res.json({ success: 0, message: err.message })
@@ -119,7 +132,7 @@ exports.get_perscription = async (req, res) => {
         }).populate({
             path: "user",
             select: 'custom_request_id name mobile gender dob address role profile_image'
-        })
+        }).populate('category')
         return res.json({ success: 1, message: "List of prescriptions", data: resp, fdata });
     } catch (err) {
         return res.json({ success: 0, message: err.message })
