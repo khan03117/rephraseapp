@@ -6,6 +6,10 @@ exports.create_booking = async (req, res) => {
     const { doctor_id, slot_id, booking_date } = req.body;
     const slots = await Slot.findOne({ _id: slot_id, doctor: doctor_id, status: "available" })
         .lean();
+    const finddoctor = await User.findOne({ _id: doctor_id });
+    if (!finddoctor) {
+        return res.json({ success: 0, message: "Doctor not found" });
+    }
     if (!slots) {
         return res.status(400).json({ success: 0, message: "Slot not available or already booked" });
     }
@@ -27,6 +31,7 @@ exports.create_booking = async (req, res) => {
         booking_date: moment.tz(booking_date, "Asia/Kolkata").startOf("day").utc().toDate(),
         start_at,
         end_at,
+        consultation_charge: finddoctor?.consultation_charge,
         duration: (end_at.getTime() - start_at.getTime()) / 60000,
         status: "booked"
     };
