@@ -59,7 +59,6 @@ exports.write_perscription = async (req, res) => {
         if (!findBooking) {
             return res.json({ success: 0, message: "patient not found" });
         }
-
         const data = { category, booking, user: findBooking.user, text: [text], doctor: req.user._id, text_type: "array" };
         const isExist = await Prescription.findOne({ category, booking });
         let resp;
@@ -81,33 +80,74 @@ exports.write_perscription = async (req, res) => {
 
 }
 exports.delete_perscription = async (req, res) => {
-    const { id } = req.params;
-    const resp = await Prescription.deleteOne({ _id: id });
-    return res.json({ success: 1, message: "Prescription deleted successfull", data: resp });
-}
+    try {
+        const { id, index } = req.body;
+
+        const prescription = await Prescription.findById(id);
+        if (!prescription) {
+            return res.status(404).json({ success: 0, message: "Prescription not found" });
+        }
+
+        // If only one text entry and index is 0, delete the entire document
+        if (prescription.text.length == 1 && index == 0) {
+            await Prescription.deleteOne({ _id: id });
+            return res.json({
+                success: 1,
+                message: "Entire prescription deleted successfully",
+            });
+        }
+
+        // Otherwise, remove the text entry at the given index
+        if (index >= 0 && index < prescription.text.length) {
+            prescription.text.splice(index, 1);
+            prescription.markModified('text');
+            await prescription.save();
+
+            return res.json({
+                success: 1,
+                message: "Text entry deleted successfully",
+                data: prescription,
+            });
+        } else {
+            await Prescription.deleteOne({ _id: id });
+            return res.json({
+                success: 1,
+                message: "Text entry deleted successfully",
+
+            });
+        }
+    } catch (err) {
+        return res.status(500).json({
+            success: 0,
+            message: "Internal server error",
+            error: err.message,
+        });
+    }
+};
+
 exports.update_perscription = async (req, res) => {
-    const { category, text, user } = req.body;
+    const { text, index } = req.body;
     const { id } = req.params;
-    const checkCategory = await PrescriptionCategory.findOne({ _id: category });
-    if (!checkCategory) {
-        return res.json({ success: 0, message: "Invalid cateogry" });
+    const checkPrescription = await Prescription.findOne({ _id: id });
+    if (!checkPrescription) {
+        return res.json({ success: 0, message: "Invalid prescription id" });
     }
-    const findUser = await User.findOne({ _id: user });
-    if (!findUser) {
-        return res.json({ success: 0, message: "patient not found" });
-    }
-    const data = { category, user, text, doctor: req.user._id };
-    const resp = await Prescription.findOneAndUpdate({ _id: id }, { $set: data });
-    return res.json({ success: 1, message: "Prescription updated successfully", data: resp })
+    checkPrescription.text[index] = text;
+    await checkPrescription.save();
+    // const resp = await Prescription.findOneAndUpdate({ _id: id }, { $set: data });
+    return res.json({ success: 1, message: "Prescription updated successfully" })
 }
 exports.get_perscription = async (req, res) => {
     try {
-        const { user, doctor, type, booking_id, category } = req.query;
+        const { user, doctor, type, booking_id, category, print_only } = req.query;
         const userId = req.user._id;
         const role = req.user.role;
         const fdata = {};
         if (category) {
             fdata['category'] = category
+        }
+        if (print_only) {
+            fdata['category'] = { $in: print_only.split(',') }
         }
         if (role == "User") {
             fdata['user'] = userId

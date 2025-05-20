@@ -11,6 +11,6 @@ router.put('/category/update/:id', update_category);
 router.get('/', Auth, get_perscription);
 router.post('/', Auth, write_perscription);
 router.post('/upload', Auth, store.single('image'), upload_old_perscription);
-router.delete('/delete/:id', delete_perscription);
+router.post('/delete', Auth, delete_perscription);
 router.put('/update/:id', update_perscription);
 module.exports = router;
