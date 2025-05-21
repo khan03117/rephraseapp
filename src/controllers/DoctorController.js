@@ -115,7 +115,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     as: "slots",
                     pipeline: [
                         {
-                            $match: { start_time: { $gte: new Date() } }
+                            $match: { isHoliday: false, status: "available", weekdayName: moment().format('dddd') }
                         },
                         { $limit: 2 }
                     ]
@@ -152,6 +152,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     ref_code: 1,
                     role: 1,
                     roles: 1,
+                    slots: 1,
                     mci_number: 1,
                     coordinates: 1,
                     languages: 1,
