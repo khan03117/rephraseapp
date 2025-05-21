@@ -1,11 +1,21 @@
 const Booking = require("../models/Booking");
 const Slot = require("../models/Slot");
 const moment = require("moment-timezone");
+const User = require("../models/User");
+const Razorpay = require("razorpay");
+require('dotenv').config();
+const keyid = process.env.TEST_KEY_ID;
+const secretid = process.env.TEST_SECRET_KEY;
+const razorpay_instance = new Razorpay({
+    key_id: keyid,
+    key_secret: secretid
+});
 exports.create_booking = async (req, res) => {
     const userId = req.user._id;
     const { doctor_id, slot_id, booking_date } = req.body;
     const slots = await Slot.findOne({ _id: slot_id, doctor: doctor_id, status: "available" })
         .lean();
+    const bookinguser = await User.findOne({ _id: userId });
     const finddoctor = await User.findOne({ _id: doctor_id });
     if (!finddoctor) {
         return res.json({ success: 0, message: "Doctor not found" });
@@ -24,6 +34,7 @@ exports.create_booking = async (req, res) => {
     const start_at = moment.tz(`${booking_date} ${slotStart}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc().toDate();
     const end_at = moment.tz(`${booking_date} ${slotEnd}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc().toDate();
     // return res.json({ start_at, end_at });
+    const consult_amount = finddoctor?.consultation_charge;
     const bdata = {
         mode: req.body.mode ?? "Online",
         user: userId,
@@ -31,9 +42,9 @@ exports.create_booking = async (req, res) => {
         booking_date: moment.tz(booking_date, "Asia/Kolkata").startOf("day").utc().toDate(),
         start_at,
         end_at,
-        consultation_charge: finddoctor?.consultation_charge,
+        consultation_charge: consult_amount,
         duration: (end_at.getTime() - start_at.getTime()) / 60000,
-        status: "booked"
+        status: "pending"
     };
     const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const parsedDate = new Date(booking_date);
@@ -54,15 +65,49 @@ exports.create_booking = async (req, res) => {
     const blockedSlot = await Slot.create(blockdata);
     bdata['booked_slot'] = blockedSlot._id;
     const booking = await Booking.create(bdata);
-
-    return res.json({ success: 1, message: "Booking successful", data: booking });
+    const booking_id = booking._id;
+    const payment_data = {
+        amount: parseFloat(consult_amount) * 100,
+        currency: "INR",
+        receipt: booking_id
+    }
+    await razorpay_instance.orders.create(payment_data, async function (err, order) {
+        console.log(order);
+        const order_id = order.id;
+        const udata = {
+            order_id: order_id,
+            payment_gateway_request: order
+        }
+        const options = {
+            key: keyid,
+            amount: consult_amount, // Amount in paise
+            currency: "INR",
+            name: "Rephrase mental health",
+            description: "Create Appointment",
+            order_id: order_id,
+            // handler: (response) => {
+            //     console.log(response);
+            //     alert("Payment Successful!");
+            // },
+            prefill: {
+                name: bookinguser.name,
+                email: bookinguser.email,
+                contact: bookinguser.mobile,
+            },
+            theme: {
+                color: "#F37254",
+            },
+        };
+        const updatedbooking = await Booking.findOneAndUpdate({ _id: booking_id }, { $set: udata }, { new: true });
+        return res.json({ success: 1, message: "Booking successful", data: updatedbooking, options });
+    });
 };
 
 exports.get_booking = async (req, res) => {
     // await Booking.deleteMany({});
     const userId = req.user._id;
     const role = req.user.role;
-    const { date, page = 1, perPage = 10, status, event_timing } = req.query;
+    const { date, page = 1, perPage = 10, status, event_timing, order_id } = req.query;
 
     const timezone = "Asia/Kolkata";
     const todayStart = moment.tz(timezone).startOf("day").utc().toDate();
@@ -74,6 +119,9 @@ exports.get_booking = async (req, res) => {
     }
     if (role == "Doctor") {
         fdata['doctor'] = userId
+    }
+    if (order_id) {
+        fdata['order_id'] = order_id
     }
     if (event_timing) {
         if (event_timing == "Upcoming") {
@@ -205,5 +253,20 @@ exports.update_booking = async (req, res) => {
         return res.json({ success: 1, message: "Booking updated successfully", data: new_booking })
     } catch (err) {
         return res.json({ success: 0, message: err.message })
+    }
+}
+
+exports.update_payment_status = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const order = await razorpay_instance.orders.fetch(orderId);
+        if (!order) {
+            return res.json({ success: 0, message: "Not found" });
+        }
+        const data = { payment_status: order.status, payment_gateway_response: order, status: "booked" };
+        const bookingdata = await Booking.findOneAndUpdate({ order_id: orderId }, { $set: data }, { new: true });
+        return res.json({ success: 1, message: `Your payment was ${order.status}`, data: bookingdata })
+    } catch (err) {
+        return res.json({ success: 0, message: err.message });
     }
 }

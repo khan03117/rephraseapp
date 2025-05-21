@@ -56,6 +56,19 @@ const bookingSchema = new Schema({
     },
     call_status: {
         type: String
+    },
+    order_id: {
+        type: String
+    },
+    payment_gateway_request: {
+        type: Schema.Types.Mixed
+    },
+    payment_gateway_response: {
+        type: Schema.Types.Mixed
+    },
+    payment_status: {
+        type: String,
+        default: "Pending"
     }
 
 }, { timestamps: true });

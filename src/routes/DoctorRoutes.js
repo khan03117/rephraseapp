@@ -5,7 +5,7 @@ const { handle_specility, get_specility, getDoctorWithSpecialization, clinics, a
 const router = Router();
 router.post('/specility/:doctor_id', Auth, handle_specility);
 router.get('/specility/:doctor_id', Auth, get_specility);
-router.get('/', Auth, getDoctorWithSpecialization);
+router.get('/', getDoctorWithSpecialization);
 router.get('/clinics', Auth, clinics);
 router.put('/update/:id', Auth, handleActive);
 router.post('/create-booking', Auth, add_patient);

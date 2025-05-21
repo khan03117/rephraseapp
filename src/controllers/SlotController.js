@@ -191,7 +191,6 @@ exports.get_slot = async (req, res) => {
         const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         // if (date) {
         //     fdata["date"] = moment.tz(date, "Asia/Kolkata").startOf("day").utc().toDate();
-
         // }
         if (clinic) {
             fdata["clinic"] = clinic;
