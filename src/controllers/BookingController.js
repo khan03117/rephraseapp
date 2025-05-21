@@ -67,11 +67,14 @@ exports.create_booking = async (req, res) => {
     const booking = await Booking.create(bdata);
     const booking_id = booking._id;
     const payment_data = {
-        amount: parseFloat(consult_amount) * 100 ?? 10000,
+
+        amount: parseFloat(consult_amount) * 100,
+
         currency: "INR",
         receipt: booking_id
     }
     await razorpay_instance.orders.create(payment_data, async function (err, order) {
+
         const order_id = order.id;
         const udata = {
             order_id: order_id,
