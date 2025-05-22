@@ -178,7 +178,7 @@ exports.create_single_slot = async (req, res) => {
 
 exports.get_slot = async (req, res) => {
     try {
-        const { dayname, date = new Date(), clinic, doctor_id } = req.query;
+        const { dayname, date = new Date(), clinic, doctor_id, all } = req.query;
         const fdata = {
             status: { $ne: "blocked" }
         };
@@ -215,7 +215,10 @@ exports.get_slot = async (req, res) => {
         }
         if (req.user.role == "Doctor") {
             holidayfind['doctor'] = req.user._id
-            delete fdata.weekdayName;
+            if (all) {
+                delete fdata.weekdayName;
+            }
+
         }
 
         const isholiday = await Slot.findOne({ ...holidayfind, isHoliday: true });
