@@ -40,7 +40,6 @@ const getMyAllRooms = async (req, res) => {
         const rooms = await ChatRoom.find({ users: userId })
             .populate("users", "name email mobile profile_image")
             .sort({ createdAt: -1 });
-
         return res.status(200).json({
             success: 1,
             data: rooms,
