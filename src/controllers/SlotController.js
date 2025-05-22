@@ -215,6 +215,7 @@ exports.get_slot = async (req, res) => {
         }
         if (req.user.role == "Doctor") {
             holidayfind['doctor'] = req.user._id
+            delete fdata.weekdayName;
         }
 
         const isholiday = await Slot.findOne({ ...holidayfind, isHoliday: true });
