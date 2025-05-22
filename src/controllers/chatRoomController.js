@@ -16,7 +16,9 @@ const getOrCreateChatRoom = async (req, res) => {
 
         // const fromId = mongoose.Types.ObjectId(from);
         // const toId = mongoose.Types.ObjectId(to);
-
+        if (fromId == toId) {
+            return res.status(404).json({ success: 0, message: "Select a valid receipt" })
+        }
         const roomId = generateRoomId(fromId, toId);
 
         let room = await ChatRoom.findOne({ roomId }).populate("users", "name email mobile");
