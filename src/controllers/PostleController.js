@@ -2,14 +2,15 @@ const UserPost = require("../models/UserPost");
 
 exports.write_post = async (req, res) => {
     try {
-        const files = req.files;
+        const files = req.files.file;
+        console.log(files);
         const paths = files.map(fl => fl.path);
         const data = {
             how_was_day: req.body.how_was_day,
             user: req.user._id,
             text: req.body.text,
             files: paths,
-            for_date: for_date
+            for_date: req.body.for_date
         }
         const resp = await UserPost.create(data);
         return res.json({ success: 1, message: "Created successfully", data: resp });
