@@ -29,8 +29,15 @@ exports.send_chat_message = async (req, res) => {
 
 exports.get_chat_message = async (req, res) => {
     try {
-        const { room_id } = req.body;
-        const messages = await Chat.find({ roomId: room_id })
+        const { room_id, page = 1, perPage = 10 } = req.body;
+        const fdata = {
+            roomId: room_id
+        }
+        const totalDocs = await Chat.countDocuments(fdata);
+        const totalPages = Math.ceil(totalDocs / perPage);
+        const skip = (page - 1) * perPage;
+        const pagination = { totalDocs, totalPages, perPage, page };
+        const messages = await Chat.find(fdata)
             .populate("from", "name email mobile profile_image")
             .populate({
                 path: "roomId",
@@ -40,8 +47,8 @@ exports.get_chat_message = async (req, res) => {
                     select: "name email mobile profile_image",
                 },
             })
-            .sort({ timestamp: 1 });
-        return res.json({ success: 1, message: "List of chat message", data: messages })
+            .sort({ timestamp: 1 }).skip(skip).limit(perPage);
+        return res.json({ success: 1, message: "List of chat message", data: messages, pagination })
     } catch (err) {
         return res.status(500).json({ success: 0, message: err.message });
     }
