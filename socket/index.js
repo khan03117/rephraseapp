@@ -17,8 +17,8 @@ wss.on('connection', (ws) => {
     ws.on('message', (data) => {
         const parsedData = JSON.parse(data);
         if (parsedData.type == "joinRoom") {
-            ws.room = parsedData.room_id;
-            // ws.user_id = parsedData.user_id;
+            ws.room = parsedData.roomId;
+            ws.user_id = parsedData.user_id;
         }
     });
     ws.on('close', (data) => {
