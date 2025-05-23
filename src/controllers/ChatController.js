@@ -14,8 +14,8 @@ exports.send_chat_message = async (req, res) => {
             status: "Sent"
         };
         const messagesend = await Chat.create(data);
-        const findlastchat = await Chat.findOne({ _id: messagesend._id });
-        emitter.emit('apiEvent', { ...findlastchat, from: sender })
+        console.log(messagesend);
+        emitter.emit('apiEvent', { ...messagesend, from: sender })
         return res.status(201).json({
             success: 1,
             message: "Message sent successfully",
