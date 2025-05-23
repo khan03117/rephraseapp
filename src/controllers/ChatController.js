@@ -16,7 +16,7 @@ exports.send_chat_message = async (req, res) => {
         };
         const messagesend = await Chat.create(data);
 
-        emitter.emit('apiEvent', { ...data, sender: JSON.stringify(sender) })
+        emitter.emit('apiEvent', { ...data, sender: sender })
         return res.status(201).json({
             success: 1,
             message: "Message sent successfully",
