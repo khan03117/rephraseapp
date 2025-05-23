@@ -37,14 +37,6 @@ exports.get_chat_message = async (req, res) => {
         const pagination = { totalDocs, totalPages, perPage, page };
         const messages = await Chat.find(fdata)
             .populate("from", "name email mobile profile_image")
-            .populate({
-                path: "roomId",
-                select: "users",
-                populate: {
-                    path: "users",
-                    select: "name email mobile profile_image",
-                },
-            })
             .sort({ timestamp: 1 }).skip(skip).limit(perPage);
         return res.json({ success: 1, message: "List of chat message", data: messages, pagination })
     } catch (err) {
