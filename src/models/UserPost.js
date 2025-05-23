@@ -13,6 +13,9 @@ const schema = new Schema({
     },
     voices: {
         type: [String]
+    },
+    for_date: {
+        type: Date
     }
 
 }, { timestamps: true });

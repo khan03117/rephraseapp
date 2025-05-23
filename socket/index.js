@@ -18,7 +18,7 @@ wss.on('connection', (ws) => {
         const parsedData = JSON.parse(data);
         if (parsedData.type == "joinRoom") {
             ws.room = parsedData.room_id;
-            ws.user_id = parsedData.user_id;
+            // ws.user_id = parsedData.user_id;
         }
     });
     ws.on('close', (data) => {
@@ -27,7 +27,7 @@ wss.on('connection', (ws) => {
 })
 
 emitter.on('apiEvent', (data) => {
-    let community = data.room_id;
+    let community = data.roomId;
     wss.clients.forEach((client) => {
         if (client.readyState == WebSocket.OPEN && community.toString() == client.room.toString()) {
             client.send(JSON.stringify(data));
