@@ -16,6 +16,9 @@ const schema = new Schema({
     },
     for_date: {
         type: Date
+    },
+    how_was_day: {
+        type: String
     }
 
 }, { timestamps: true });

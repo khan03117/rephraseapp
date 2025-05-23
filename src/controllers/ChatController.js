@@ -5,7 +5,6 @@ const User = require("../models/User");
 exports.send_chat_message = async (req, res) => {
     try {
         const { room_id, chat_message } = req.body;
-
         const sender_id = req.user._id;
         const sender = await User.findOne({ _id: sender_id }).select('name email mobile profile_image');
         const data = {
@@ -15,7 +14,6 @@ exports.send_chat_message = async (req, res) => {
             status: "Sent"
         };
         const messagesend = await Chat.create(data);
-
         emitter.emit('apiEvent', { ...data, from: sender })
         return res.status(201).json({
             success: 1,

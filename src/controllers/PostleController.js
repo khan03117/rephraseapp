@@ -5,6 +5,7 @@ exports.write_post = async (req, res) => {
         const files = req.files;
         const paths = files.map(fl => fl.path);
         const data = {
+            how_was_day: req.body.how_was_day,
             user: req.user._id,
             text: req.body.text,
             files: paths,
