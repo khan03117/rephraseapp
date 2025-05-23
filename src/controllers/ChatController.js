@@ -11,7 +11,8 @@ exports.send_chat_message = async (req, res) => {
             roomId: room_id,
             from: sender_id,
             text: chat_message,
-            status: "Sent"
+            status: "Sent",
+            timestamp: new Date()
         };
         const messagesend = await Chat.create(data);
         console.log(messagesend);
