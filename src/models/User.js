@@ -82,7 +82,12 @@ const schema = new Schema({
         type: String
     },
     consultation_charge: {
-        type: String
+        type: Number,
+        default: 1000
+    },
+    consultation_charge_offline: {
+        type: Number,
+        default: 500
     },
     coordinates: {
         type: { type: String, default: "Point" },
