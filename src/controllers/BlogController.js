@@ -63,6 +63,23 @@ exports.get_blog = async (req, res) => {
         return res.json({ success: 0, message: err.message });
     }
 }
+exports.latest_blog = async (req, res) => {
+    try {
+        const { id, url } = req.query;
+        const fdata = {}
+        if (id) {
+            fdata['_id'] = { $ne: id };
+        }
+        if (url) {
+            fdata['slug'] = { $ne: url };
+        }
+
+        const resp = await Blog.find(fdata).populate('categories').sort({ createdAt: -1 }).limit(6);
+        return res.json({ success: 1, message: "Testimonial fetched successfull", data: resp });
+    } catch (err) {
+        return res.json({ success: 0, message: err.message });
+    }
+}
 
 exports.update_blog = async (req, res) => {
     try {
