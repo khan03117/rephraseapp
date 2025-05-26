@@ -44,7 +44,7 @@ const agoraRoutes = require('./src/routes/AgoraRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
 const adminRoutes = require('./src/routes/AdminRoutes');
 const postroutes = require('./src/routes/PostRoutes');
-
+const settingroutes = require('./src/routes/SettingRoutes');
 
 app.use('/api/v1/user', userroutes);
 app.use('/api/v1/doctor', doctorroutes);
@@ -59,6 +59,7 @@ app.use('/api/v1/call', agoraRoutes);
 app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/post', postroutes);
+app.use('/api/v1/setting', settingroutes);
 app.get('/', (req, res) => res.send('Rephrase App Started'))
 // app.listen(port, () => console.log(`Rephrase app listening on port ${port}! http://localhost:7887/`))
 server.listen(port, () => {
