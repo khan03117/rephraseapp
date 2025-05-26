@@ -143,6 +143,7 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                     mobile: 1,
                     gender: 1,
                     consultation_charge: 1,
+                    consultation_charge_offline: 1,
                     dob: 1,
                     profession: 1,
                     marital_status: 1,
