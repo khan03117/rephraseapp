@@ -146,29 +146,29 @@ exports.update_profile = async (req, res) => {
             ...req.body
         }
 
-        if (req.files.profile_image) {
-            data['profile_image'] = req.files.profile_image[0].path
+        if (req.files?.profile_image) {
+            data['profile_image'] = req.files?.profile_image[0].path
         }
-        if (req.files.registration_certificate) {
-            data['registration_certificate'] = req.files.registration_certificate[0].path
+        if (req.files?.registration_certificate) {
+            data['registration_certificate'] = req.files?.registration_certificate[0].path
         }
-        if (req.files.graduation_certificate) {
-            data['graduation_certificate'] = req.files.graduation_certificate[0].path
+        if (req.files?.graduation_certificate) {
+            data['graduation_certificate'] = req.files?.graduation_certificate[0].path
         }
-        if (req.files.post_graduation_certificate) {
-            data['post_graduation_certificate'] = req.files.post_graduation_certificate[0].path
+        if (req.files?.post_graduation_certificate) {
+            data['post_graduation_certificate'] = req.files?.post_graduation_certificate[0].path
         }
-        if (req.files.mci_certificate) {
-            data['mci_certificate'] = req.files.mci_certificate[0].path
+        if (req.files?.mci_certificate) {
+            data['mci_certificate'] = req.files?.mci_certificate[0].path
         }
-        if (req.files.aadhaar_front) {
-            data['aadhaar_front'] = req.files.aadhaar_front[0].path
+        if (req.files?.aadhaar_front) {
+            data['aadhaar_front'] = req.files?.aadhaar_front[0].path
         }
-        if (req.files.aadhaar_back) {
-            data['aadhaar_back'] = req.files.aadhaar_back[0].path
+        if (req.files?.aadhaar_back) {
+            data['aadhaar_back'] = req.files?.aadhaar_back[0].path
         }
-        if (req.files.pan_image) {
-            data['pan_image'] = req.files.pan_image[0].path
+        if (req.files?.pan_image) {
+            data['pan_image'] = req.files?.pan_image[0].path
         }
 
 
