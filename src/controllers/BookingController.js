@@ -266,6 +266,12 @@ exports.update_payment_status = async (req, res) => {
         }
         const data = { payment_status: order.status, payment_gateway_response: order, status: "booked" };
         const bookingdata = await Booking.findOneAndUpdate({ order_id: orderId }, { $set: data }, { new: true });
+        if (order.status != "paid") {
+            const booked_slot = bookingdata.booked_slot;
+            await Slot.deleteOne({ _id: booked_slot });
+        }
+
+
         return res.json({ success: 1, message: `Your payment was ${order.status}`, data: bookingdata })
     } catch (err) {
         return res.json({ success: 0, message: err.message });
