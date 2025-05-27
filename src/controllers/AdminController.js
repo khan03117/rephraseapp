@@ -5,7 +5,7 @@ exports.dashboard = async (req, res) => {
     try {
         const totalDoctors = await User.countDocuments({ role: "Doctor" });
         const totalUsers = await User.countDocuments({ role: "User" });
-        const totalBookings = await Booking.countDocuments({});
+        const totalBookings = await Booking.countDocuments({ payment_status: "paid" });
         const data = {
             totalDoctors, totalUsers, totalBookings
         }
@@ -17,6 +17,11 @@ exports.dashboard = async (req, res) => {
 exports.booking_trend = async (req, res) => {
     try {
         const data = await Booking.aggregate([
+            {
+                $match: {
+                    payment_status: "paid"
+                }
+            },
             {
                 $group: {
                     _id: {
