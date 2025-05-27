@@ -24,10 +24,11 @@ const getOrCreateChatRoom = async (req, res) => {
         let room = await ChatRoom.findOne({ roomId }).populate("users", "name email mobile");
 
         if (!room) {
-            room = await ChatRoom.create({
+            const createdroom = await ChatRoom.create({
                 users: [fromId, toId].sort(),
                 roomId,
             });
+            room = await ChatRoom.findOne({ _id: createdroom._id }).populate("users", "name email mobile");
         }
         return res.status(200).json({ success: 1, message: "Room fetched/created successfully", data: room });
     } catch (error) {
