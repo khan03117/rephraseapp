@@ -282,7 +282,6 @@ exports.mark_booking_completed = async (req, res) => {
     try {
         const { booking_id } = req.body;
         const bdata = {
-            status: "Completed",
             "is_completed": "Completed"
         }
         const new_booking = await Booking.findOneAndUpdate({ _id: booking_id }, { $set: bdata }, { new: true });
