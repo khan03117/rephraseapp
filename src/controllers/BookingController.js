@@ -114,7 +114,7 @@ exports.get_booking = async (req, res) => {
     const todayStart = moment.tz(timezone).startOf("day").utc().toDate();
     const todayEnd = moment.tz(timezone).endOf("day").utc().toDate();
 
-    const fdata = {}
+    const fdata = { "payment_status": "paid" }
     if (role == "User") {
         fdata['user'] = userId
     }
