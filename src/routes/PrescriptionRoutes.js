@@ -9,6 +9,7 @@ router.post('/category', create_category);
 router.delete('/category/delete/:id', delete_category);
 router.put('/category/update/:id', update_category);
 router.get('/', Auth, get_perscription);
+router.get('/print', get_perscription);
 router.post('/', Auth, write_perscription);
 router.post('/upload', Auth, store.single('image'), upload_old_perscription);
 router.post('/delete', Auth, delete_perscription);
