@@ -277,3 +277,17 @@ exports.update_payment_status = async (req, res) => {
         return res.json({ success: 0, message: err.message });
     }
 }
+
+exports.mark_booking_completed = async (req, res) => {
+    try {
+        const { booking_id } = req.body;
+        const bdata = {
+            status: "Completed",
+            "is_completed": "Completed"
+        }
+        const new_booking = await Booking.findOneAndUpdate({ _id: booking_id }, { $set: bdata }, { new: true });
+        return res.json({ success: 1, message: "Booking updated successfully", data: new_booking })
+    } catch (error) {
+        return res.json({ success: 0, message: error.message })
+    }
+}

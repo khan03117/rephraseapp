@@ -41,7 +41,7 @@ const bookingSchema = new Schema({
     },
 
     status: {
-        type: String
+        type: String //Completed, Cancelled, Booked
     },
     is_completed: {
         type: String,
