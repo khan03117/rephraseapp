@@ -31,6 +31,10 @@ const schema = new Schema({
     },
     type: {
         type: String
+    },
+    show_to_patient: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 module.exports = new model('Prescription', schema);

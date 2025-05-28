@@ -3,6 +3,8 @@ const Slot = require("../models/Slot");
 const moment = require("moment-timezone");
 const User = require("../models/User");
 const Razorpay = require("razorpay");
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 require('dotenv').config();
 const keyid = process.env.TEST_KEY_ID;
 const secretid = process.env.TEST_SECRET_KEY;
@@ -297,12 +299,12 @@ exports.all_reports = async (req, res) => {
         if (!from_date || !to_date) {
             return res.json({ success: 0, message: "Dates are required", data: [] });
         }
-        const finddata = {};
+        const finddata = { payment_status: "paid" };
         if (req.user.role == "Doctor") {
-            finddata['doctor'] = req.user._id
+            finddata['doctor'] = new ObjectId(req.user._id);
         }
         if (doctor_id) {
-            finddata['doctor'] = doctor_id;
+            finddata['doctor'] = new ObjectId(doctor_id);
         }
         const fdate = moment(from_date).utc().toDate();
         const tdate = moment(to_date).utc().toDate();
@@ -313,10 +315,7 @@ exports.all_reports = async (req, res) => {
         const total_bookings = await Booking.countDocuments(finddata);
         const sum_Amount = await Booking.aggregate([
             {
-                $match: {
-                    ...finddata,
-                    payment_status: "paid"
-                }
+                $match: finddata
             },
             {
                 $group: {
@@ -331,8 +330,10 @@ exports.all_reports = async (req, res) => {
         });
         const pending_Bookings = await Booking.countDocuments({
             ...finddata,
+            status: { $ne: "Cancelled" },
             is_completed: "Pending"
         });
+
 
         const completed_Bookings = await Booking.countDocuments({
             ...finddata,
@@ -340,7 +341,7 @@ exports.all_reports = async (req, res) => {
         });
         const result = await Booking.find(finddata);
         const data = {
-            total_bookings, sum_Amount, cancelled_Bookings, pending_Bookings, completed_Bookings,
+            sum_Amount: sum_Amount[0]?.totalAmount, total_bookings, cancelled_Bookings, pending_Bookings, completed_Bookings,
 
         }
         return res.json({ success: 1, data, list: result, message: "List of transactions" })
