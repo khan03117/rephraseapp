@@ -310,8 +310,8 @@ exports.all_reports = async (req, res) => {
             $gte: fdate,
             $lte: tdate
         };
-        const totalbookings = await Booking.countDocuments(finddata);
-        const sumAmount = await Booking.aggregate([
+        const total_bookings = await Booking.countDocuments(finddata);
+        const sum_Amount = await Booking.aggregate([
             {
                 $match: {
                     ...finddata,
@@ -325,25 +325,25 @@ exports.all_reports = async (req, res) => {
                 }
             }
         ]);
-        const cancelledBookings = await Booking.countDocuments({
+        const cancelled_Bookings = await Booking.countDocuments({
             ...finddata,
             status: "Cancelled"
         });
-        const pendingBookings = await Booking.countDocuments({
+        const pending_Bookings = await Booking.countDocuments({
             ...finddata,
             is_completed: "Pending"
         });
 
-        const completedBookings = await Booking.countDocuments({
+        const completed_Bookings = await Booking.countDocuments({
             ...finddata,
             is_completed: "Completed"
         });
         const result = await Booking.find(finddata);
         const data = {
-            totalbookings, sumAmount, cancelledBookings, pendingBookings, completedBookings, result
+            total_bookings, sum_Amount, cancelled_Bookings, pending_Bookings, completed_Bookings,
 
         }
-        return res.json({ success: 1, data, message: "List of transactions" })
+        return res.json({ success: 1, data, list: result, message: "List of transactions" })
 
     } catch (err) {
         return res.json({ success: 0, message: err.message });
