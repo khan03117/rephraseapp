@@ -46,6 +46,7 @@ const adminRoutes = require('./src/routes/AdminRoutes');
 const postroutes = require('./src/routes/PostRoutes');
 const settingroutes = require('./src/routes/SettingRoutes');
 const policyroutes = require('./src/routes/PolicyRoutes');
+const transroute = require('./src/routes/TransactionRoute');
 
 app.use('/api/v1/user', userroutes);
 app.use('/api/v1/doctor', doctorroutes);
@@ -62,6 +63,7 @@ app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/post', postroutes);
 app.use('/api/v1/setting', settingroutes);
 app.use('/api/v1/policy', policyroutes);
+app.use('/api/v1/transaction', transroute);
 
 app.get('/', (req, res) => res.send('Rephrase App Started'))
 // app.listen(port, () => console.log(`Rephrase app listening on port ${port}! http://localhost:7887/`))
