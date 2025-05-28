@@ -291,3 +291,61 @@ exports.mark_booking_completed = async (req, res) => {
         return res.json({ success: 0, message: error.message })
     }
 }
+exports.all_reports = async (req, res) => {
+    try {
+        const { doctor_id, from_date, to_date } = req.query;
+        if (!from_date || !to_date) {
+            return res.json({ success: 0, message: "Dates are required", data: [] });
+        }
+        const finddata = {};
+        if (req.user.role == "Doctor") {
+            finddata['doctor'] = req.user._id
+        }
+        if (doctor_id) {
+            finddata['doctor'] = doctor_id;
+        }
+        const fdate = moment(from_date).utc().toDate();
+        const tdate = moment(to_date).utc().toDate();
+        finddata['createdAt'] = {
+            $gte: fdate,
+            $lte: tdate
+        };
+        const totalbookings = await Booking.countDocuments(finddata);
+        const sumAmount = await Booking.aggregate([
+            {
+                $match: {
+                    ...finddata,
+                    payment_status: "paid"
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalAmount: { $sum: "$consultation_charge" }
+                }
+            }
+        ]);
+        const cancelledBookings = await Booking.countDocuments({
+            ...finddata,
+            status: "Cancelled"
+        });
+        const pendingBookings = await Booking.countDocuments({
+            ...finddata,
+            is_completed: "Pending"
+        });
+
+        const completedBookings = await Booking.countDocuments({
+            ...finddata,
+            is_completed: "Completed"
+        });
+        const result = await Booking.find(finddata);
+        const data = {
+            totalbookings, sumAmount, cancelledBookings, pendingBookings, completedBookings, result
+
+        }
+        return res.json({ success: 1, data, message: "List of transactions" })
+
+    } catch (err) {
+        return res.json({ success: 0, message: err.message });
+    }
+}
