@@ -34,7 +34,7 @@ exports.get_specility = async (req, res) => {
     return res.json({ success: 1, message: "List of specilities", data: resps });
 }
 exports.getDoctorWithSpecialization = async (req, res) => {
-    const { url, id, languages = [], specility = [], mode = [], page = 1, perPage = 10 } = req.query;
+    const { url, keyword, id, languages = [], specility = [], mode = [], page = 1, perPage = 10 } = req.query;
     try {
         const languagesArr = Array.isArray(languages) ? languages : languages.split(',').filter(Boolean);
         const specilityArr = Array.isArray(specility) ? specility : specility.split(',').filter(Boolean);
@@ -79,7 +79,13 @@ exports.getDoctorWithSpecialization = async (req, res) => {
                 fdata['_id'] = usr._id;
             }
         }
-
+        if (keyword) {
+            fdata["$or"] = [
+                { name: { $regex: keyword, $options: "i" } },
+                { email: { $regex: keyword, $options: "i" } },
+                { mobile: { $regex: keyword, $options: "i" } },
+            ];
+        }
         const totalDocs = await User.countDocuments(fdata);
         const totalPages = Math.ceil(totalDocs / perPage);
         const skip = (page - 1) * perPage;
