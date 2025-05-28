@@ -150,7 +150,8 @@ exports.get_perscription = async (req, res) => {
             fdata['category'] = { $in: print_only.split(',') }
         }
         if (role == "User") {
-            fdata['user'] = userId
+            fdata['user'] = userId;
+            fdata['show_to_patient'] = true;
         }
         if (booking_id) {
             fdata['booking'] = booking_id;
@@ -238,6 +239,7 @@ exports.show_categories_perscription_to_user = async (req, res) => {
             }
         }
         await Prescription.updateMany(data, { $set: { show_to_patient: true } });
+        return res.json({ success: 0, message: "Data updated successfully" });
     } catch (err) {
         return res.json({ success: 0, message: err.message })
     }
