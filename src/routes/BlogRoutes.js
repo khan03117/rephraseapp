@@ -6,8 +6,8 @@ const { Auth } = require("../middleware/Auth");
 const router = Router();
 router.get('/', get_blog);
 router.get('/latest', latest_blog);
-router.get('/report', Auth, all_reports);
-router.post('/', store.fields([
+
+router.post('/', Auth, store.fields([
     {
         name: "banner",
         maxCount: 1
@@ -17,7 +17,7 @@ router.post('/', store.fields([
         maxCount: 1
     }
 ]), create_blog);
-router.put('/update/:id', store.fields([
+router.put('/update/:id', Auth, store.fields([
     {
         name: "banner",
         maxCount: 1
@@ -27,5 +27,5 @@ router.put('/update/:id', store.fields([
         maxCount: 1
     }
 ]), update_blog);
-router.delete('/delete/:id', delete_blog);
+router.delete('/delete/:id', Auth, delete_blog);
 module.exports = router;
