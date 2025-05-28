@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { get_category, create_category, delete_category, update_category, get_perscription, write_perscription, delete_perscription, update_perscription, upload_old_perscription } = require("../controllers/PrescriptionController");
+const { get_category, create_category, delete_category, update_category, get_perscription, write_perscription, delete_perscription, update_perscription, upload_old_perscription, show_categories_perscription_to_user } = require("../controllers/PrescriptionController");
 const { Auth } = require("../middleware/Auth");
 const store = require("../middleware/Upload");
 
@@ -14,4 +14,6 @@ router.post('/', Auth, write_perscription);
 router.post('/upload', Auth, store.single('image'), upload_old_perscription);
 router.post('/delete', Auth, delete_perscription);
 router.put('/update/:id', update_perscription);
+router.post('/update-patient-view', Auth, show_categories_perscription_to_user);
+
 module.exports = router;
