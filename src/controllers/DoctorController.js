@@ -6,6 +6,7 @@ const Clinic = require("../models/Clinic");
 const Slot = require("../models/Slot");
 const Booking = require("../models/Booking");
 const moment = require("moment-timezone");
+const UserBank = require("../models/UserBank");
 
 exports.handle_specility = async (req, res) => {
     const { doctor_id } = req.params;
@@ -288,5 +289,48 @@ exports.handleActive = async (req, res) => {
         return res.json({ success: 1, data: updatedUser, message: "Updated successfully" });
     } catch (err) {
         return res.json({ success: 0, message: err.message })
+    }
+}
+exports.add_bank = async (req, res) => {
+    try {
+        const fields = ['bank_name', 'ifsc', 'account_type', 'account_number', 'account_holder_name'];
+        const emptyFields = fields.filter(field => !req.body[field]);
+        if (emptyFields.length > 0) {
+            return res.json({ success: 0, errors: 'The following fields are required:', fields: emptyFields });
+        }
+        const user = req.user._id;
+        const data = { ...req.body, user: user };
+        const resp = await UserBank.create(data);
+        return res.json({ success: 1, message: "User bank added successfully", data: resp });
+    } catch (error) {
+        return res.json({ success: 0, message: error.message })
+    }
+}
+exports.update_bank = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const fields = ['bank_name', 'ifsc', 'account_type', 'account_number', 'account_holder_name'];
+        const emptyFields = fields.filter(field => !req.body[field]);
+        if (emptyFields.length > 0) {
+            return res.json({ success: 0, errors: 'The following fields are required:', fields: emptyFields });
+        }
+        const user = req.user._id;
+        const data = { ...req.body, user: user };
+        const resp = await UserBank.updateOne({ _id: id }, { $set: data });
+        return res.json({ success: 1, message: "User bank added successfully", data: resp });
+    } catch (error) {
+        return res.json({ success: 0, message: error.message })
+    }
+}
+exports.delete_bank = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = req.user._id;
+        const data = { is_deleted: true };
+        const resp = await UserBank.updateOne({ _id: id }, { $set: data });
+        return res.json({ success: 1, message: "User bank added successfully", data: resp });
+    } catch (error) {
+        return res.json({ success: 0, message: error.message })
     }
 }

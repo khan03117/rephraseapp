@@ -239,7 +239,7 @@ exports.show_categories_perscription_to_user = async (req, res) => {
             }
         }
         await Prescription.updateMany(data, { $set: { show_to_patient: true } });
-        return res.json({ success: 0, message: "Data updated successfully" });
+        return res.json({ success: 1, message: "Data updated successfully" });
     } catch (err) {
         return res.json({ success: 0, message: err.message })
     }
