@@ -349,3 +349,13 @@ exports.get_bank = async (req, res) => {
         return res.json({ success: 0, message: error.message })
     }
 }
+exports.set_default_bank = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = { is_default: true };
+        const resp = await UserBank.updateOne({ _id: id }, { $set: data });
+        return res.json({ success: 1, message: "User bank fetched successfully", data: resp });
+    } catch (error) {
+        return res.json({ success: 0, message: error.message })
+    }
+}

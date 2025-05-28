@@ -20,6 +20,10 @@ const schema = new Schema({
     account_holder_name: {
         type: String
     },
+    is_default: {
+        type: Boolean,
+        default: false
+    },
     is_deleted: {
         type: Boolean,
         default: false
