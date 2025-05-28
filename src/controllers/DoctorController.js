@@ -325,11 +325,26 @@ exports.update_bank = async (req, res) => {
 exports.delete_bank = async (req, res) => {
     try {
         const { id } = req.params;
-
         const user = req.user._id;
         const data = { is_deleted: true };
         const resp = await UserBank.updateOne({ _id: id }, { $set: data });
         return res.json({ success: 1, message: "User bank added successfully", data: resp });
+    } catch (error) {
+        return res.json({ success: 0, message: error.message })
+    }
+}
+exports.get_bank = async (req, res) => {
+    try {
+        const { doctor_id } = req.query;
+        const fdata = {};
+        if (req.user.role == "Doctor") {
+            fdata['user'] = req.user._id
+        }
+        if (doctor_id) {
+            fdata['user'] = doctor_id
+        }
+        const resp = await UserBank.find(fdata);
+        return res.json({ success: 1, message: "User bank fetched successfully", data: resp });
     } catch (error) {
         return res.json({ success: 0, message: error.message })
     }
