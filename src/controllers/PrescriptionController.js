@@ -216,3 +216,29 @@ exports.upload_old_perscription = async (req, res) => {
         return res.json({ success: 0, message: err.message })
     }
 }
+
+exports.show_categories_perscription_to_user = async (req, res) => {
+    try {
+        const { print_only, booking_id } = req.body;
+        if (!print_only) {
+            return res.json({ success: 0, message: "print_only is required" });
+        }
+        const findBooking = await Booking.findOne({ _id: booking_id, doctor: req.user._id });
+        if (!findBooking) {
+            return res.json({ success: 0, message: "Invalid booking id" });
+        }
+        const preitems = await Prescription.find({ booking: booking_id });
+        if (preitems.length == 0) {
+            return res.json({ success: 0, message: "No prescription found" })
+        }
+        const data = {
+            booking: booking_id,
+            category: {
+                $in: print_only.split(',')
+            }
+        }
+        await Prescription.updateMany(data, { $set: { show_to_patient: true } });
+    } catch (err) {
+        return res.json({ success: 0, message: err.message })
+    }
+}
