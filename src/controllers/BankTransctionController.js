@@ -82,7 +82,8 @@ exports.balance = async (req, res) => {
             {
                 $match: {
                     doctor: new ObjectId(doctor_id),
-                    is_deleted: false // optional: only include active transactions
+                    "transaction_type": "Credit",
+                    is_deleted: false
                 }
             },
             {
