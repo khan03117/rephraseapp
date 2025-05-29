@@ -2,7 +2,7 @@ const BankTransaction = require("../models/BankTransaction");
 
 exports.create_transaction = async (req, res) => {
     try {
-        const fields = ['bank', 'doctor', 'transaction_date', 'transction_type', 'amount'];
+        const fields = ['bank', 'doctor', 'transaction_date', 'transaction_type', 'amount'];
         const emptyFields = fields.filter(field => !req.body[field]);
         if (emptyFields.length > 0) {
             return res.json({ success: 0, errors: 'The following fields are required:', fields: emptyFields });
