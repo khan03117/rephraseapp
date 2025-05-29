@@ -23,7 +23,7 @@ const schema = new Schema({
     },
     booking: {
         type: Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Booking",
         default: null
     },
     file: {
