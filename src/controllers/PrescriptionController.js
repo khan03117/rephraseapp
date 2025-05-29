@@ -174,7 +174,7 @@ exports.get_perscription = async (req, res) => {
         }).populate({
             path: "user",
             select: 'custom_request_id name mobile gender dob address role profile_image'
-        }).populate('category')
+        }).populate('category').populate('booking')
         return res.json({ success: 1, message: "List of prescriptions", data: resp, fdata });
     } catch (err) {
         return res.json({ success: 0, message: err.message })
