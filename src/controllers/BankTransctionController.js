@@ -1,5 +1,7 @@
 const BankTransaction = require("../models/BankTransaction");
-
+const Booking = require("../models/Booking");
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 exports.create_transaction = async (req, res) => {
     try {
         const fields = ['bank', 'doctor', 'transaction_date', 'transaction_type', 'amount'];
@@ -54,6 +56,49 @@ exports.get_transactions = async (req, res) => {
         }
         const resp = await BankTransaction.find(fdata).populate('bank').populate('doctor');
         return res.json({ success: 1, message: "User bank fetched successfully", data: resp });
+    } catch (error) {
+        return res.json({ success: 0, message: error.message })
+    }
+}
+exports.balance = async () => {
+    try {
+        const doctor_id = req.user._id;
+        const finddata = {
+            doctor: new ObjectId(doctor_id)
+        }
+        const totalAmount = await Booking.aggregate([
+            {
+                $match: finddata
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalAmount: { $sum: "$consultation_charge" }
+                }
+            }
+        ]);
+        const amount = totalAmount[0]?.totalAmount;
+        const result = await BankTransaction.aggregate([
+            {
+                $match: {
+                    doctor: mongoose.Types.ObjectId(doctorId),
+                    is_deleted: false // optional: only include active transactions
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalAmount: { $sum: "$amount" }
+                }
+            }
+        ]);
+        const credits = result[0]?.totalAmount;
+        const data = {
+            total_amount: amount,
+            total_credit: credits,
+            balance: amount - credits
+        }
+        return res.json({ success: 1, message: " balance ", data })
     } catch (error) {
         return res.json({ success: 0, message: error.message })
     }
