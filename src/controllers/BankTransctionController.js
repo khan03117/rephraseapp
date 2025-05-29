@@ -52,7 +52,7 @@ exports.get_transactions = async (req, res) => {
         if (doctor_id) {
             fdata['user'] = doctor_id
         }
-        const resp = await BankTransaction.find(fdata).populate('bank').populate('transaction');
+        const resp = await BankTransaction.find(fdata).populate('bank').populate('doctor');
         return res.json({ success: 1, message: "User bank fetched successfully", data: resp });
     } catch (error) {
         return res.json({ success: 0, message: error.message })
