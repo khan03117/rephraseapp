@@ -47,10 +47,10 @@ exports.get_transactions = async (req, res) => {
         const { doctor_id } = req.query;
         const fdata = {};
         if (req.user.role == "Doctor") {
-            fdata['user'] = req.user._id
+            fdata['doctor'] = req.user._id
         }
         if (doctor_id) {
-            fdata['user'] = doctor_id
+            fdata['doctor'] = doctor_id
         }
         const resp = await BankTransaction.find(fdata).populate('bank').populate('doctor');
         return res.json({ success: 1, message: "User bank fetched successfully", data: resp });
