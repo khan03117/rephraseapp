@@ -110,7 +110,7 @@ exports.create_booking = async (req, res) => {
 exports.get_booking = async (req, res) => {
     const userId = req.user._id;
     const role = req.user.role;
-    const { date, page = 1, perPage = 10, status, event_timing, order_id } = req.query;
+    const { date, user, page = 1, perPage = 10, status, event_timing, order_id } = req.query;
 
     const timezone = "Asia/Kolkata";
     const todayStart = moment.tz(timezone).startOf("day").utc().toDate();
@@ -119,6 +119,9 @@ exports.get_booking = async (req, res) => {
     const fdata = { "payment_status": "paid" }
     if (role == "User") {
         fdata['user'] = userId
+    }
+    if (user) {
+        fdata['user'] = user
     }
     if (role == "Doctor") {
         fdata['doctor'] = userId
