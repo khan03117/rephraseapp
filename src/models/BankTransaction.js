@@ -14,7 +14,7 @@ const schema = new Schema({
     transaction_date: {
         type: Date
     },
-    transction_type: {
+    transaction_type: {
         type: String,
         default: "Credit"
     },
