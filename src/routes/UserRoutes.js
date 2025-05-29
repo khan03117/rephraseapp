@@ -2,6 +2,7 @@ const { Router } = require("express");
 const { verify_otp, update_profile, user_list, send_otp, store_profile, admin_login, my_profile, update_fcm_token } = require("../controllers/UserController");
 const store = require("../middleware/Upload");
 const { Auth } = require("../middleware/Auth");
+const { balance } = require("../controllers/BankTransctionController");
 
 const router = Router();
 router.post('/send-otp', send_otp);
@@ -49,6 +50,7 @@ router.post('/register', Auth, store.fields([
 router.get('/all', user_list);
 router.post('/auth', admin_login);
 router.get('/', Auth, my_profile);
+router.get('/balance', Auth, balance);
 router.post('/update-fcm-token', Auth, update_fcm_token);
 
 
