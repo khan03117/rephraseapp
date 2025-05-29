@@ -81,7 +81,7 @@ exports.balance = async (req, res) => {
         const result = await BankTransaction.aggregate([
             {
                 $match: {
-                    doctor: mongoose.Types.ObjectId(doctorId),
+                    doctor: new ObjectId(doctor_id),
                     is_deleted: false // optional: only include active transactions
                 }
             },
