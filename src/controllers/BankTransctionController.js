@@ -60,7 +60,7 @@ exports.get_transactions = async (req, res) => {
         return res.json({ success: 0, message: error.message })
     }
 }
-exports.balance = async () => {
+exports.balance = async (req, res) => {
     try {
         const doctor_id = req.user._id;
         const finddata = {
