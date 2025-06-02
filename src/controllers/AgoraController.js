@@ -53,7 +53,7 @@ exports.start_meet = async (req, res) => {
 
         await send_one_to_one_notification(not_obj);
     }
-    return res.status(200).json({ success: 1, message: "call started", data: updated_bookng, agora_token: updated_bookng.agora_token, APP_CERTIFICATE, APP_ID });
+    return res.status(200).json({ success: 1, message: "call started", channelId: "AGORACALL", data: updated_bookng, agora_token: updated_bookng.agora_token, APP_CERTIFICATE, APP_ID });
 
 }
 exports.end_meet = async (req, res) => {
