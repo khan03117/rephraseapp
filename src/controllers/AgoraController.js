@@ -13,7 +13,7 @@ exports.start_meet = async (req, res) => {
     const fdata = {
         _id: booking_id
     }
-    const bookng = await Booking.findOne(fdata).populate('doctor', "name email mobile profile_image fcm_token").populate('user', "name email mobile profile_image fcm_token");
+    const bookng = await Booking.findOne(fdata).populate('doctor', "name email mobile profile_image fcm_token custom_request_id").populate('user', "name email mobile  custom_request_id profile_image fcm_token");
     if (!bookng) {
         return res.json({ success: 0, message: "Invalid booking request id" });
     }
@@ -30,9 +30,7 @@ exports.start_meet = async (req, res) => {
     const urole = req.user.role;
     agora_token = await getAgoraToken(booking_id, uid, urole);
     await Booking.findOneAndUpdate({ _id: bookng._id }, { agora_token: agora_token, agora_token_generated_at: new Date() }, { new: true });
-
     const updated_bookng = await Booking.findOne(fdata).populate('doctor', "name email mobile profile_image fcm_token").populate('user', "name email mobile profile_image fcm_token");
-
     const bodymessage = req.user.role == "User" ? `Your consultation with ${bookng.doctor.name} has started. Join now to begin your session.` : ` "Consultant ${bookng.user.name} has joined the session. Join now to begin.",`
     if (bookng.doctor.fcm_token && bookng.user.fcm_token) {
         const not_obj = {
@@ -53,7 +51,7 @@ exports.start_meet = async (req, res) => {
 
         await send_one_to_one_notification(not_obj);
     }
-    return res.status(200).json({ success: 1, message: "call started", channelId: "AGORACALL", data: updated_bookng, agora_token: updated_bookng.agora_token, APP_CERTIFICATE, APP_ID });
+    return res.status(200).json({ success: 1, message: "call started", data: updated_bookng, user_id: req.user.custom_request_id, agora_token: updated_bookng.agora_token, APP_CERTIFICATE, APP_ID });
 
 }
 exports.end_meet = async (req, res) => {
