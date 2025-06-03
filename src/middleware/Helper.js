@@ -8,8 +8,8 @@ exports.getAgoraToken = async (booking_id, uid, role) => {
         if (!booking_id || !uid || !role) {
             return res.status(400).json({ error: 'Missing parameters' });
         }
-        const findbooking = await Booking.findOne({ _id: booking_id }).select("user").populate({ path: "user", select: "custom_request_id" });
-        const user_id = findbooking.user.custom_request_id;
+        // const findbooking = await Booking.findOne({ _id: booking_id }).select("user").populate({ path: "user", select: "custom_request_id" });
+        // const user_id = findbooking.user.custom_request_id;
         const MAX_EXPIRATION = 1 * 60 * 60;
         const currentTimestamp = Math.floor(Date.now() / 1000);
         const privilegeExpiredTs = currentTimestamp + MAX_EXPIRATION;
@@ -21,7 +21,7 @@ exports.getAgoraToken = async (booking_id, uid, role) => {
             APP_ID,
             APP_CERTIFICATE,
             channelName,
-            user_id,
+            uid,
             rtcRole,
             privilegeExpiredTs
         );

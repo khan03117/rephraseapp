@@ -26,11 +26,12 @@ exports.start_meet = async (req, res) => {
         !agoraTokenGeneratedAt ||
         (currentTime - new Date(agoraTokenGeneratedAt)) > bookingDuration;
 
-    const uid = req.user._id.toString()
+    const uid = req.user.custom_request_id.toString()
     const urole = req.user.role;
     agora_token = await getAgoraToken(booking_id, uid, urole);
     await Booking.findOneAndUpdate({ _id: bookng._id }, { agora_token: agora_token, agora_token_generated_at: new Date() }, { new: true });
     const updated_bookng = await Booking.findOne(fdata).populate('doctor', "name email mobile profile_image fcm_token").populate('user', "name email mobile profile_image fcm_token");
+
     const bodymessage = req.user.role == "User" ? `Your consultation with ${bookng.doctor.name} has started. Join now to begin your session.` : ` "Consultant ${bookng.user.name} has joined the session. Join now to begin.",`
     if (bookng.doctor.fcm_token && bookng.user.fcm_token) {
         const not_obj = {
