@@ -36,7 +36,9 @@ exports.create_booking = async (req, res) => {
     const start_at = moment.tz(`${booking_date} ${slotStart}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc().toDate();
     const end_at = moment.tz(`${booking_date} ${slotEnd}`, "YYYY-MM-DD HH:mm", "Asia/Kolkata").utc().toDate();
     // return res.json({ start_at, end_at });
-    const consult_amount = finddoctor?.consultation_charge;
+    const mode = req.body.mode ?? "Online";
+
+    const consult_amount = mode == "Online" ? finddoctor?.consultation_charge : finddoctor?.consultation_charge_offline;
     const bdata = {
         mode: req.body.mode ?? "Online",
         user: userId,
