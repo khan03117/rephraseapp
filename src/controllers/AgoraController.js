@@ -26,7 +26,7 @@ exports.start_meet = async (req, res) => {
         !agoraTokenGeneratedAt ||
         (currentTime - new Date(agoraTokenGeneratedAt)) > bookingDuration;
 
-    const uid = req.user.custom_request_id.toString()
+    const uid = req.user.request_id.toString()
     const urole = req.user.role;
     agora_token = await getAgoraToken(booking_id, uid, urole);
     await Booking.findOneAndUpdate({ _id: bookng._id }, { agora_token: agora_token, agora_token_generated_at: new Date() }, { new: true });
