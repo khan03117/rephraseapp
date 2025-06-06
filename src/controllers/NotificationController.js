@@ -1,5 +1,5 @@
 const { firebaseAdmin } = require("../../firebaseAuth");
-exports.send_one_to_one_notification = async (ftoken, title, body, sound = "default", channelId = "rephrase", data = null) => {
+exports.send_one_to_one_notification = async ({ ftoken, title, body, sound = "default", channelId = "rephrase", data = null }) => {
     try {
         const message = {
             notification: {

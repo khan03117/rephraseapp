@@ -4,6 +4,7 @@ const moment = require("moment-timezone");
 const User = require("../models/User");
 const Razorpay = require("razorpay");
 const mongoose = require('mongoose');
+const { send_one_to_one_notification } = require("./NotificationController");
 const ObjectId = mongoose.Types.ObjectId;
 require('dotenv').config();
 const keyid = process.env.TEST_KEY_ID;
@@ -273,6 +274,20 @@ exports.update_payment_status = async (req, res) => {
         }
         const data = { payment_status: order.status, payment_gateway_response: order, status: order.status == "paid" ? 'booked' : "pending" };
         const bookingdata = await Booking.findOneAndUpdate({ order_id: orderId }, { $set: data }, { new: true });
+        if (order.status == "paid") {
+            const doctorfind = await User.findOne({ _id: bookingdata.doctor });
+            if (doctorfind.fcm_token) {
+                const bdate = moment(bookingdata.booking_date).format('DD-MM-YYY');
+                const bodymessage = `New appointment on ${bdate} reveived`;
+                const not_obj = {
+                    ftoken: req.user.role == doctorfind.user.fcm_token,
+                    title: "New Appointment Booked",
+                    body: bodymessage,
+                    sound: "callringtone",
+                }
+                send_one_to_one_notification(not_obj)
+            }
+        }
         if (order.status != "paid") {
             const booked_slot = bookingdata.booked_slot;
             await Slot.deleteOne({ _id: booked_slot });
